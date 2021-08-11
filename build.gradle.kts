@@ -8,7 +8,6 @@ repositories {
 
 dependencies {
 	implementation(kotlin("stdlib"))
-	implementation("org.apache.commons:commons-math3:3.6.1")
 
 	testImplementation(kotlin("test-junit5"))
 }
