@@ -6,6 +6,9 @@ repositories {
 	mavenCentral()
 }
 
+group = "we.rashchenko"
+version = "0.0.1-alpha"
+
 dependencies {
 	implementation(kotlin("stdlib"))
 
