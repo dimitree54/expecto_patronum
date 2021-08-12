@@ -1,4 +1,5 @@
 plugins {
+	id("maven-publish")
 	kotlin("jvm") version "1.5.21"
 }
 
@@ -6,29 +7,40 @@ repositories {
 	mavenCentral()
 }
 
-group = "we.rashchenko"
-version = "0.0.1-alpha"
-
 dependencies {
 	implementation(kotlin("stdlib"))
 
+	implementation("org.apache.commons:commons-math3:3.6.1")
+
 	testImplementation(kotlin("test-junit5"))
-}
-
-tasks.test {
-	useJUnitPlatform()
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-	kotlinOptions.jvmTarget = "1.8"
 }
 
 // we need to specify following sourceSets because we store main and test not in default
 //  location (which is module_path/src/main and module_path/src/test)
 sourceSets.main {
-	java.srcDirs("main")
+	java.srcDirs("src/main")
 }
 
 sourceSets.test {
-	java.srcDirs("test")
+	java.srcDirs("src/test")
+}
+
+publishing {
+	publications {
+		create<MavenPublication>("default") {
+			from(components["java"])
+			// Include any other artifacts here, like javadocs
+		}
+	}
+
+	repositories {
+		maven {
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/dimitree54/ChNN-Library")
+			credentials {
+				username = System.getenv("GITHUB_ACTOR")
+				password = System.getenv("GITHUB_TOKEN")
+			}
+		}
+	}
 }
