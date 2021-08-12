@@ -1,2 +1,3 @@
 # ChNN-Library
-Chaotil neural networks library
+Chaotic neural networks library
+https://dimitree54.github.io/ChNN/
