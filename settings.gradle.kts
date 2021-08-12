@@ -1,1 +1,1 @@
-rootProject.name = "ChNN-Library"
+rootProject.name = "chnn-library"

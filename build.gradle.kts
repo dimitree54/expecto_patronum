@@ -36,7 +36,7 @@ publishing {
 	repositories {
 		maven {
 			name = "GitHubPackages"
-			url = uri("https://maven.pkg.github.com/dimitree54/ChNN-Library")
+			url = uri("https://maven.pkg.github.com/dimitree54/chnn-library")
 			credentials {
 				username = System.getenv("GITHUB_ACTOR")
 				password = System.getenv("GITHUB_TOKEN")
