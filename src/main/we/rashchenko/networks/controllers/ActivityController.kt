@@ -1,8 +1,8 @@
 package we.rashchenko.networks.controllers
 
 import org.apache.commons.math3.stat.StatUtils
+import we.rashchenko.base.Feedback
 import we.rashchenko.neurons.ControlledNeuron
-import we.rashchenko.utils.Feedback
 import we.rashchenko.utils.clip
 import kotlin.math.abs
 import kotlin.math.sqrt

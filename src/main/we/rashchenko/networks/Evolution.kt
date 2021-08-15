@@ -1,7 +1,7 @@
 package we.rashchenko.networks
 
 import we.rashchenko.networks.builders.NeuralNetworkBuilder
-import we.rashchenko.utils.WorstNNeuronIDs
+import we.rashchenko.utils.collections.WorstNNeuronIDs
 import java.util.*
 
 class Evolution(

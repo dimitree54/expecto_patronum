@@ -1,6 +1,5 @@
 package we.rashchenko.utils
 
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -20,12 +19,10 @@ internal class KNearestVectorsConnectionSamplerTest {
 				assertTrue(it[v10]!!.toSet() == setOf(Vector2.ZERO, Vector2.ONES))
 			}
 			allVectors.add(Vector2(0f, 0.5f))
-			sampler.connectNew(Vector2(0f, 0.5f), allVectors).also {
-				assertTrue(it[Vector2(0f, 0.5f)]!!.toSet() == setOf(v01, Vector2.ZERO))
-				assertTrue(it[Vector2.ZERO]!!.toSet() == setOf(Vector2(0f, 0.5f)))
-				assertTrue(it[v01]!!.toSet() == setOf(Vector2(0f, 0.5f)))
-				assertFalse(it.containsKey(v10))
-				assertFalse(it.containsKey(Vector2.ONES))
+			Vector2(0f, 0.5f).also { position ->
+				sampler.connectNew(position, allVectors).also {
+					assertTrue(it.toSet() == setOf(v01, Vector2.ZERO))
+				}
 			}
 		}
 	}
@@ -55,12 +52,10 @@ internal class KNearestVectorsConnectionSamplerTest {
 				assertTrue(it[v10]!!.toSet() == setOf(Vector2.ZERO, Vector2.ONES, v01))
 			}
 			allVectors.add(Vector2(0f, 0.5f))
-			sampler.connectNew(Vector2(0f, 0.5f), allVectors).also {
-				assertTrue(it[Vector2(0f, 0.5f)]!!.toSet() == setOf(Vector2.ZERO, v01, v10, Vector2.ONES))
-				assertTrue(it[Vector2.ZERO]!!.toSet() == setOf(Vector2(0f, 0.5f)))
-				assertTrue(it[v01]!!.toSet() == setOf(Vector2(0f, 0.5f)))
-				assertTrue(it[v10]!!.toSet() == setOf(Vector2(0f, 0.5f)))
-				assertTrue(it[Vector2.ONES]!!.toSet() == setOf(Vector2(0f, 0.5f)))
+			Vector2(0f, 0.5f).also { position ->
+				sampler.connectNew(position, allVectors).also {
+					assertTrue(it.toSet() == setOf(Vector2.ZERO, v01, v10, Vector2.ONES))
+				}
 			}
 		}
 	}

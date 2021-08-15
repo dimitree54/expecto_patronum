@@ -1,8 +1,12 @@
 package we.rashchenko.networks
 
+import we.rashchenko.base.Feedback
+import we.rashchenko.base.getFeedback
+import we.rashchenko.base.update
 import we.rashchenko.neurons.InputNeuron
 import we.rashchenko.neurons.Neuron
-import we.rashchenko.utils.*
+import we.rashchenko.utils.ExponentialMovingAverage
+import we.rashchenko.utils.randomIds
 
 class StochasticNeuralNetwork : NeuralNetworkWithInput {
 	private val neuronsWithID = mutableMapOf<Int, Neuron>()
@@ -101,7 +105,8 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
 		synchronized(receiver) {
 			val isReceiverInput = receiverID in inputNeuronIDs
 			if (receiverID !in nextTickNeurons || isReceiverInput) {
-				if (receiver.touch(sourceID, timeStep) || isReceiverInput) {
+				receiver.touch(sourceID, timeStep)
+				if (receiver.active || isReceiverInput) {
 					val feedbackUpdate = receiver.getFeedback(sourceID)
 					synchronized(setAddingLock) {
 						neuronFeedbacks[sourceID]!!.update(feedbackUpdate)

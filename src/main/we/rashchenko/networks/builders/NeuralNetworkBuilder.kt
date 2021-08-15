@@ -1,7 +1,7 @@
 package we.rashchenko.networks.builders
 
+import we.rashchenko.base.Feedback
 import we.rashchenko.networks.NeuralNetwork
-import we.rashchenko.utils.Feedback
 
 interface NeuralNetworkBuilder {
 	val neuralNetwork: NeuralNetwork

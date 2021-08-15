@@ -1,9 +1,9 @@
 package we.rashchenko.neurons
 
+import we.rashchenko.base.Feedback
+import we.rashchenko.base.update
 import we.rashchenko.utils.ExponentialMovingAverage
-import we.rashchenko.utils.Feedback
 import we.rashchenko.utils.softmax
-import we.rashchenko.utils.update
 import java.util.*
 
 class NeuronsManager : NeuronsSampler {

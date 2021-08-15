@@ -1,6 +1,6 @@
 package we.rashchenko.neurons
 
-import we.rashchenko.utils.Feedback
+import we.rashchenko.base.Feedback
 
 interface NeuronsSampler {
 	val name: String

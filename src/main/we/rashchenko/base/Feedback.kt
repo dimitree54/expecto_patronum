@@ -1,4 +1,6 @@
-package we.rashchenko.utils
+package we.rashchenko.base
+
+import we.rashchenko.utils.ExponentialMovingAverage
 
 /**
  * Wrapper for double feedback to make sure it meets limitations.

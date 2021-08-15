@@ -1,8 +1,8 @@
 package we.rashchenko.networks
 
+import we.rashchenko.base.Feedback
 import we.rashchenko.base.Ticking
 import we.rashchenko.neurons.Neuron
-import we.rashchenko.utils.Feedback
 
 interface NeuralNetwork : Ticking {
 	val neuronIDs: Collection<Int>

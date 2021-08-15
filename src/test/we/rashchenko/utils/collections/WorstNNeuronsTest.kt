@@ -1,8 +1,9 @@
-package we.rashchenko.utils
+package we.rashchenko.utils.collections
 
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import we.rashchenko.base.Feedback
 
 internal class WorstNNeuronsTest {
 	@Test

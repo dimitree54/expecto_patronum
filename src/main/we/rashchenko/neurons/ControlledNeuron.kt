@@ -1,7 +1,7 @@
 package we.rashchenko.neurons
 
+import we.rashchenko.base.Feedback
 import we.rashchenko.utils.ExponentialMovingAverage
-import we.rashchenko.utils.Feedback
 import kotlin.system.measureTimeMillis
 
 class ControlledNeuron(private val baseNeuron: Neuron, private val creationTimeStep: Long) : Neuron by baseNeuron {
@@ -61,13 +61,11 @@ class ControlledNeuron(private val baseNeuron: Neuron, private val creationTimeS
 	}
 
 	private val averageTouchTime = ExponentialMovingAverage(0.0)
-	override fun touch(sourceId: Int, timeStep: Long): Boolean {
-		return if (control) {
-			val result: Boolean
+	override fun touch(sourceId: Int, timeStep: Long) {
+		if (control) {
 			measureTimeMillis {
-				result = baseNeuron.touch(sourceId, timeStep)
+				baseNeuron.touch(sourceId, timeStep)
 			}.let { averageTouchTime.update(it.toDouble()) }
-			result
 		} else {
 			baseNeuron.touch(sourceId, timeStep)
 		}

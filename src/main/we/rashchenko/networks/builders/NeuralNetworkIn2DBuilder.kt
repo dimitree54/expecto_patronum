@@ -1,12 +1,16 @@
 package we.rashchenko.networks.builders
 
 import we.rashchenko.base.Activity
+import we.rashchenko.base.Feedback
 import we.rashchenko.environments.Environment
 import we.rashchenko.networks.NeuralNetworkWithInput
 import we.rashchenko.neurons.MirroringNeuron
 import we.rashchenko.neurons.Neuron
 import we.rashchenko.neurons.NeuronsSampler
-import we.rashchenko.utils.*
+import we.rashchenko.utils.KNearestVectorsConnectionSampler
+import we.rashchenko.utils.RandomPositionSampler
+import we.rashchenko.utils.Vector2
+import we.rashchenko.utils.randomIds
 
 
 class NeuralNetworkIn2DBuilder(
@@ -102,12 +106,13 @@ class NeuralNetworkIn2DBuilder(
 
 	private fun connect(position: Vector2) {
 		val newConnections = vectorsConnectionSampler.connectNew(position, nnIDsWithPosition.values)
-		newConnections.forEach { (fromPosition, toPositions) ->
-			toPositions.forEach { toPosition ->
-				neuralNetwork.addConnection(
-					positionsWithNNIDs[fromPosition]!!, positionsWithNNIDs[toPosition]!!
-				)
-			}
+		newConnections.forEach { connectedPosition ->
+			neuralNetwork.addConnection(
+				positionsWithNNIDs[position]!!, positionsWithNNIDs[connectedPosition]!!
+			)
+			neuralNetwork.addConnection(
+				positionsWithNNIDs[connectedPosition]!!, positionsWithNNIDs[position]!!
+			)
 		}
 	}
 

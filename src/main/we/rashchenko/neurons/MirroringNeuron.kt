@@ -1,7 +1,7 @@
 package we.rashchenko.neurons
 
 import we.rashchenko.base.Activity
-import we.rashchenko.utils.Feedback
+import we.rashchenko.base.Feedback
 
 
 // Other external neurons possible:
@@ -17,7 +17,7 @@ class MirroringNeuron(
 	override fun getInternalFeedback(): Feedback =
 		if (externalActivity.active == baseNeuron.active) Feedback.VERY_POSITIVE else Feedback.VERY_NEGATIVE
 
-	override fun touch(sourceId: Int, timeStep: Long): Boolean = baseNeuron.touch(sourceId, timeStep)
+	override fun touch(sourceId: Int, timeStep: Long) = baseNeuron.touch(sourceId, timeStep)
 	override fun forgetSource(sourceId: Int) = baseNeuron.forgetSource(sourceId)
 	override fun getFeedback(sourceId: Int): Feedback = baseNeuron.getFeedback(sourceId)
 
