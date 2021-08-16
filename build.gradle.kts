@@ -1,6 +1,7 @@
 plugins {
 	id("maven-publish")
 	kotlin("jvm") version "1.5.21"
+	id("org.jetbrains.dokka") version "1.5.0"
 }
 
 repositories {
