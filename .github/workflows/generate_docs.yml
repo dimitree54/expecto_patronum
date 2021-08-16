@@ -20,9 +20,14 @@ jobs:
       - name: Generate Docs
         run: ./gradlew dokkaHtml
       - name: Install docs publisher
+        env:
+          MY_EMAIL: dimitree54@gmail.com
+          MY_NAME: dimitree54
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
             npm install -g --silent gh-pages@2.0.1
-            git config user.email "dimitree54@gmail.com"
-            git config user.name "Docs bot"
+            git config --global user.email $MY_EMAIL
+            git config --global user.name $MY_NAME
+            git remote set-url origin https://$MY_NAME:$GITHUB_TOKEN@github.com/$MY_NAME/ChNN-Library.git
       - name: Deploy docs to gh-pages branch
         run: gh-pages --dist build/dokka/html
