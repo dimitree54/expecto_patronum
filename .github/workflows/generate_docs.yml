@@ -27,7 +27,7 @@ jobs:
         run: |
             npm install -g --silent gh-pages@2.0.1
             git config --global user.email $MY_EMAIL
-            git config --global user.name $MY_NAME
+            git config --global user.name "Docs bot"
             git remote set-url origin https://$MY_NAME:$GITHUB_TOKEN@github.com/$MY_NAME/ChNN-Library.git
       - name: Deploy docs to gh-pages branch
         run: gh-pages --dist build/dokka/html
