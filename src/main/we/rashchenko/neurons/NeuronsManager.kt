@@ -1,11 +1,15 @@
 package we.rashchenko.neurons
 
 import we.rashchenko.base.Feedback
-import we.rashchenko.base.update
 import we.rashchenko.utils.ExponentialMovingAverage
 import we.rashchenko.utils.softmax
 import java.util.*
 
+/**
+ * Wrapper for the collection of [NeuronsSampler]s that samples neurons from all wrapped samplers with
+ *  different probabilities.
+ * Better [Neuron]s the sampler produces, more often it will be used on the [next] sampling.
+ */
 class NeuronsManager : NeuronsSampler {
 	override val name: String = "manager"
 	private val neuronSamplerMap = mutableMapOf<Int, NeuronsSampler>()
@@ -24,7 +28,7 @@ class NeuronsManager : NeuronsSampler {
 
 	private fun updateRanges() {
 		val keys = samplersScore.keys
-		val probabilities = softmax(samplersScore.values.map { it.value })
+		val probabilities = softmax(samplersScore.values.map { it.value })  // @todo tune softmax coefficient
 
 		probabilityRanges.clear()
 		var lastMax = 0.0
@@ -49,7 +53,7 @@ class NeuronsManager : NeuronsSampler {
 	override fun reportFeedback(id: Int, feedback: Feedback) {
 		val sampler = neuronSamplerMap[id] ?: throw IllegalArgumentException("Unknown neuron")
 		sampler.reportFeedback(id, feedback)
-		samplersScore[sampler]?.update(feedback) ?: throw Exception("Invalid manager state")
+		samplersScore[sampler]?.update(feedback.value) ?: throw Exception("Invalid manager state")
 		updateRanges()
 	}
 

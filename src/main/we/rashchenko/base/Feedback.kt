@@ -1,12 +1,10 @@
 package we.rashchenko.base
 
-import we.rashchenko.utils.ExponentialMovingAverage
-
 /**
- * Wrapper for double feedback to make sure it meets limitations.
- * feedback > 0 is positive, for high-quality neurons;
- * feedback < 0 is negative, for neurons that does not help;
- * feedback == 0 is neutral
+ * Wrapper for double feedback to make sure it meets limitations (to be in [[-1, 1]] range).
+ * Feedback >0 is positive, 1 for high-quality neurons.
+ * Feedback <0 is negative, -1 for neurons that does not help at all.
+ * Feedback ==0 is neutral.
  */
 data class Feedback(val value: Double) : Comparable<Feedback> {
 	init {
@@ -25,12 +23,3 @@ data class Feedback(val value: Double) : Comparable<Feedback> {
 		return value.compareTo(other.value)
 	}
 }
-
-fun ExponentialMovingAverage.update(feedback: Feedback) {
-	return this.update(feedback.value)
-}
-
-fun ExponentialMovingAverage.getFeedback(): Feedback {
-	return Feedback(value)
-}
-

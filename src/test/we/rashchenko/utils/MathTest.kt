@@ -3,7 +3,7 @@ package we.rashchenko.utils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class MathKtTest {
+internal class MathTest {
 	private val eps = 0.00001
 
 	@Test

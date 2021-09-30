@@ -53,3 +53,11 @@ publishing {
 		}
 	}
 }
+
+tasks.dokkaHtml.configure {
+	dokkaSourceSets {
+		configureEach {
+			includes.from("Module.md")
+		}
+	}
+}

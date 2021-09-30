@@ -4,7 +4,8 @@ import we.rashchenko.base.ExternallyControlledActivity
 import java.util.*
 
 /**
- * Exemplar simple environment that have just 2 nodes. Nodes randomly change their behaviour once in [tickPeriod] ticks.
+ * Exemplar simple environment that have just 2 public nodes.
+ * Nodes randomly change their behaviour once in [tickPeriod] ticks.
  * These two nodes always either both active or not active (they are synchronised).
  */
 class SimpleEnvironment(private val tickPeriod: Int) : Environment {

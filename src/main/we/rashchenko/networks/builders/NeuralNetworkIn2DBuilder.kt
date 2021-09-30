@@ -1,22 +1,28 @@
 package we.rashchenko.networks.builders
 
 import we.rashchenko.base.Activity
-import we.rashchenko.base.Feedback
-import we.rashchenko.environments.Environment
+import we.rashchenko.base.ObservableActivities
 import we.rashchenko.networks.NeuralNetworkWithInput
-import we.rashchenko.neurons.MirroringNeuron
 import we.rashchenko.neurons.Neuron
 import we.rashchenko.neurons.NeuronsSampler
+import we.rashchenko.neurons.inputs.MirroringNeuron
 import we.rashchenko.utils.KNearestVectorsConnectionSampler
 import we.rashchenko.utils.RandomPositionSampler
 import we.rashchenko.utils.Vector2
 import we.rashchenko.utils.randomIds
 
 
+/**
+ * [NeuralNetworkBuilder] that places [NeuralNetworkWithInput] into 2D space.
+ * On each [addNeuron] call coordinate for this [Neuron] sampled randomly from [[0,1]] and neuron
+ *  connections sampled based on the distance between that coordinates.
+ * @param neuralNetwork [NeuralNetworkWithInput] to build
+ * @param neuronsSampler generator of new [Neuron]s for [neuralNetwork]
+ */
 class NeuralNetworkIn2DBuilder(
 	override val neuralNetwork: NeuralNetworkWithInput,
 	private val neuronsSampler: NeuronsSampler
-) : NeuralNetworkBuilder {
+) : NeuralNetworkWithInputBuilder {
 	private val positionSampler: Iterator<Vector2> = RandomPositionSampler()
 	private val vectorsConnectionSampler = KNearestVectorsConnectionSampler(5)
 	private val positionsWithNNIDs = mutableMapOf<Vector2, Int>()
@@ -28,7 +34,7 @@ class NeuralNetworkIn2DBuilder(
 	private val unattachedActivitiesWithPosition = mutableListOf<Pair<Activity, Vector2>>()
 	private fun addNeuronWithoutConnection(): Int {
 		val builderID = randomIds.next()
-		val neuron: Neuron = neuronsSampler.next(builderID)
+		val neuron: Neuron = sample(builderID)
 		return if (unattachedActivitiesWithPosition.isEmpty()) {
 			neuralNetwork.add(neuron).also { neuronID ->
 				addNeuronWithoutConnection(neuronID, builderID, positionSampler.next())
@@ -49,15 +55,19 @@ class NeuralNetworkIn2DBuilder(
 		nnIDs2builderIDs[neuronID] = builderID
 	}
 
-	private fun addNeuronsWithoutConnection(n: Int): List<Int> = (0 until n).map { addNeuronWithoutConnection() }
+	override fun addNeuron(): Int =
+		addNeuronWithoutConnection().also { neuronID ->
+			connect(nnIDsWithPosition[neuronID]!!)
+		}
 
+	private val environmentIDsWithNeuronIDs = mutableMapOf<Int, List<Int>>()
 	private val neuronIDsConnectedToActivity = mutableMapOf<Int, Activity>()
-	private fun addEnvironmentWithoutConnection(environment: Environment): List<Int> {
+	private fun addEnvironmentWithoutConnection(environment: ObservableActivities): List<Int> {
 		val neuronIDs = mutableListOf<Int>()
 		environment.activities.associateWith { positionSampler.next() }
 			.forEach { (activity, position) ->
 				val builderID = randomIds.next()
-				val neuron = MirroringNeuron(activity, neuronsSampler.next(builderID))
+				val neuron = MirroringNeuron(activity, sample(builderID))
 				val nnID = neuralNetwork.addInputNeuron(neuron)
 				addNeuronWithoutConnection(nnID, builderID, position)
 
@@ -67,21 +77,22 @@ class NeuralNetworkIn2DBuilder(
 		return neuronIDs
 	}
 
-	private fun connectAll() {
-		val connections = vectorsConnectionSampler.connectAll(positionsWithNNIDs.keys)
-		connections.forEach { (fromPosition, toPositions) ->
-			toPositions.forEach { toPosition ->
-				neuralNetwork.addConnection(
-					positionsWithNNIDs[fromPosition]!!, positionsWithNNIDs[toPosition]!!
-				)
-			}
+	override fun addEnvironment(environment: ObservableActivities): Int {
+		val inputNeurons = addEnvironmentWithoutConnection(environment)
+		inputNeurons.forEach { neuronID ->
+			connect(nnIDsWithPosition[neuronID]!!)
 		}
+		val environmentID = randomIds.next()
+		environmentIDsWithNeuronIDs[environmentID] = inputNeurons
+		return environmentID
 	}
 
-	fun initialise(numberOfNeurons: Int, environment: Environment) {
-		addNeuronsWithoutConnection(numberOfNeurons)
-		addEnvironmentWithoutConnection(environment)
-		connectAll()
+	override fun removeEnvironment(environmentID: Int): Boolean {
+		environmentIDsWithNeuronIDs[environmentID]?.forEach {
+			neuronIDsConnectedToActivity.remove(it)
+		} ?: return false
+		environmentIDsWithNeuronIDs.remove(environmentID)
+		return true
 	}
 
 	override fun remove(neuronID: Int): Boolean {
@@ -116,16 +127,23 @@ class NeuralNetworkIn2DBuilder(
 		}
 	}
 
-	override fun addNeuron(): Int =
-		addNeuronWithoutConnection().also { neuronID ->
-			connect(nnIDsWithPosition[neuronID]!!)
-		}
-
+	/**
+	 * The function that reveals 2d coordinates of neurons. Useful for visualisations.
+	 */
 	fun getPosition(neuronID: Int): Vector2? = nnIDsWithPosition[neuronID]
 
-	override fun reportFeedback(neuronID: Int, feedback: Feedback) {
-		nnIDs2builderIDs[neuronID]?.let { id ->
-			neuronsSampler.reportFeedback(id, feedback)
+	private var lastSamplerUpdateTimeStep = -1L
+	private fun sample(id: Int): Neuron {
+		if (lastSamplerUpdateTimeStep != neuralNetwork.timeStep) {
+			lastSamplerUpdateTimeStep = neuralNetwork.timeStep
+			updateSampler()
+		}
+		return neuronsSampler.next(id)
+	}
+
+	private fun updateSampler() {
+		nnIDs2builderIDs.forEach { (neuronID, builderID) ->
+			neuronsSampler.reportFeedback(builderID, neuralNetwork.getFeedback(neuronID)!!)
 		}
 	}
 }

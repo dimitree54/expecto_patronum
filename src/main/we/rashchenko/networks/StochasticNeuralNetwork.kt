@@ -1,13 +1,17 @@
 package we.rashchenko.networks
 
 import we.rashchenko.base.Feedback
-import we.rashchenko.base.getFeedback
-import we.rashchenko.base.update
-import we.rashchenko.neurons.InputNeuron
 import we.rashchenko.neurons.Neuron
+import we.rashchenko.neurons.inputs.InputNeuron
 import we.rashchenko.utils.ExponentialMovingAverage
 import we.rashchenko.utils.randomIds
 
+/**
+ * Main implementation of the [NeuralNetworkWithInput].
+ * It is [NeuralNetwork] optimised to work with sparse activation by skipping some [Neuron] touches.
+ * It is called stochastic because it may change behaviour based on the order of [Neuron] calls.
+ * Note that [StochasticNeuralNetwork] is used for ChNN contest and that [Neuron] documentation considers that.
+ */
 class StochasticNeuralNetwork : NeuralNetworkWithInput {
 	private val neuronsWithID = mutableMapOf<Int, Neuron>()
 	override val neuronIDs: Collection<Int>
@@ -95,7 +99,9 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
 		private set
 
 	override fun getFeedback(neuronID: Int): Feedback? {
-		return inputNeuronsWithID[neuronID]?.getInternalFeedback() ?: neuronFeedbacks[neuronID]?.getFeedback()
+		return inputNeuronsWithID[neuronID]?.getInternalFeedback() ?: neuronFeedbacks[neuronID]?.value?.let{
+			Feedback(it)
+		}
 	}
 
 	override fun getNeuron(neuronID: Int): Neuron? = neuronsWithID[neuronID]
@@ -109,7 +115,7 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
 				if (receiver.active || isReceiverInput) {
 					val feedbackUpdate = receiver.getFeedback(sourceID)
 					synchronized(setAddingLock) {
-						neuronFeedbacks[sourceID]!!.update(feedbackUpdate)
+						neuronFeedbacks[sourceID]!!.update(feedbackUpdate.value)
 						nextTickNeurons.add(receiverID)
 					}
 				}

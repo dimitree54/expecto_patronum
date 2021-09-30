@@ -13,3 +13,5 @@ fun softmax(values: List<Double>): List<Double> {
 	val eSum = e.sum()
 	return e.map { it / eSum }
 }
+
+const val ZERO_DIV_EPS = 0.00001
