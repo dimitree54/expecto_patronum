@@ -89,6 +89,7 @@ class NeuralNetworkIn2DBuilder(
 
 	override fun removeEnvironment(environmentID: Int): Boolean {
 		environmentIDsWithNeuronIDs[environmentID]?.forEach {
+			remove(it)
 			neuronIDsConnectedToActivity.remove(it)
 		} ?: return false
 		environmentIDsWithNeuronIDs.remove(environmentID)
