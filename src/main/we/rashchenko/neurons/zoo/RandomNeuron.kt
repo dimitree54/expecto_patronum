@@ -8,7 +8,7 @@ import java.util.*
 /**
  * Exemplar simple implementation of the [Neuron] interface.
  */
-class RandomNeuron(val activationProbability: Float) : Neuron {
+open class RandomNeuron(val activationProbability: Float) : Neuron {
 	private val random = Random()
 
 	/**
@@ -18,7 +18,7 @@ class RandomNeuron(val activationProbability: Float) : Neuron {
 	 */
 	override fun touch(sourceId: Int, timeStep: Long) {
 		if (random.nextFloat() < activationProbability) {
-			active = true
+			internalActive = true
 		}
 	}
 
@@ -39,11 +39,12 @@ class RandomNeuron(val activationProbability: Float) : Neuron {
 	 * that random neuron turns back into default not active state.
 	 */
 	override fun update(feedback: Feedback, timeStep: Long) {
-		active = false
+		internalActive = false
 	}
 
-	override var active: Boolean = false
-		private set
+	private var internalActive = false
+	override val active: Boolean
+		get() = internalActive
 }
 
 
