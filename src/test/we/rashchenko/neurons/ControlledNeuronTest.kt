@@ -11,35 +11,35 @@ import kotlin.system.measureNanoTime
 import kotlin.system.measureTimeMillis
 import kotlin.time.measureTime
 
-internal class ControlledNeuronTest {
-
-    class SlowNeuron: RandomNeuron(0.5f){
-        override fun touch(sourceId: Int, timeStep: Long) {
-            sleep(1)
-            super.touch(sourceId, timeStep)
-        }
-
-        override fun update(feedback: Feedback, timeStep: Long) {
-            sleep(1)
-            super.update(feedback, timeStep)
-        }
-
-        override fun forgetSource(sourceId: Int) {
-            sleep(1)
-            super.forgetSource(sourceId)
-        }
-
-        override fun getFeedback(sourceId: Int): Feedback {
-            sleep(1)
-            return super.getFeedback(sourceId)
-        }
-
-        override val active: Boolean
-            get() {
-                sleep(1)
-                return super.active
-            }
+class SlowNeuron: RandomNeuron(0.5f){
+    override fun touch(sourceId: Int, timeStep: Long) {
+        sleep(1)
+        super.touch(sourceId, timeStep)
     }
+
+    override fun update(feedback: Feedback, timeStep: Long) {
+        sleep(1)
+        super.update(feedback, timeStep)
+    }
+
+    override fun forgetSource(sourceId: Int) {
+        sleep(1)
+        super.forgetSource(sourceId)
+    }
+
+    override fun getFeedback(sourceId: Int): Feedback {
+        sleep(1)
+        return super.getFeedback(sourceId)
+    }
+
+    override val active: Boolean
+        get() {
+            sleep(1)
+            return super.active
+        }
+}
+
+internal class ControlledNeuronTest {
 
     @Test
     fun getStats() {
