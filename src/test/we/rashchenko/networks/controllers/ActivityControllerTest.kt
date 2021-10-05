@@ -26,10 +26,10 @@ internal class ActivityControllerTest {
         }
 
         val controllerFeedbacks = ActivityController().getControllerFeedbacks(neurons)
-        assertTrue(controllerFeedbacks[0] < Feedback.NEUTRAL)
-        assertTrue(controllerFeedbacks[1] > Feedback.NEUTRAL)
-        assertTrue(controllerFeedbacks[2] > Feedback.NEUTRAL)
-        assertTrue(controllerFeedbacks[3] > Feedback.NEUTRAL)
-        assertTrue(controllerFeedbacks[4] < Feedback.NEUTRAL)
+        assertTrue(controllerFeedbacks[0] < Feedback(-0.8))
+        assertTrue(controllerFeedbacks[1] > Feedback(0.8))
+        assertTrue(controllerFeedbacks[2] > Feedback(0.8))
+        assertTrue(controllerFeedbacks[3] > Feedback(0.8))
+        assertTrue(controllerFeedbacks[4] < Feedback(-0.8))
     }
 }
