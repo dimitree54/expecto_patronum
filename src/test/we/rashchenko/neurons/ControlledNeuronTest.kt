@@ -11,7 +11,7 @@ import kotlin.system.measureNanoTime
 import kotlin.system.measureTimeMillis
 import kotlin.time.measureTime
 
-class SlowNeuron: RandomNeuron(0.5f){
+class SlowNeuron(activationProbability: Float = 0.5f): RandomNeuron(activationProbability){
     override fun touch(sourceId: Int, timeStep: Long) {
         sleep(1)
         super.touch(sourceId, timeStep)
