@@ -52,8 +52,8 @@ open class RandomNeuron(val activationProbability: Float) : Neuron {
  * Exemplar sampler for the [RandomNeuron]. For demonstrating purposes that neurons sampler is stateful: more successful
  * neuron was, more likely similar neuron will be sampled.
  */
-class RandomNeuronSampler : NeuronsSampler {
-	override val name: String = "RandomNeuronSampler"
+class RandomNeuronSampler(private val amplitude: Float = 0.2f) : NeuronsSampler {
+	override val name: String = "RandomNeuronSampler$amplitude"
 
 	private val random = Random()
 	private val neurons = mutableMapOf<Int, RandomNeuron>()
@@ -67,7 +67,7 @@ class RandomNeuronSampler : NeuronsSampler {
 	 */
 	override fun next(id: Int): Neuron {
 		val neuron = if (feedbacks.isEmpty() || random.nextBoolean()) {
-			RandomNeuron(random.nextFloat() * 0.2f)
+			RandomNeuron(random.nextFloat() * amplitude)
 		} else {
 			RandomNeuron(neurons[feedbacks.maxByOrNull { it.value.value }!!.key]!!.activationProbability)
 		}
