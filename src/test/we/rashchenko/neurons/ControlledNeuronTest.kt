@@ -1,15 +1,11 @@
 package we.rashchenko.neurons
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 import we.rashchenko.base.Feedback
 import we.rashchenko.neurons.zoo.RandomNeuron
-import we.rashchenko.utils.ExponentialMovingAverage
 import java.lang.Thread.sleep
-import kotlin.system.measureNanoTime
-import kotlin.system.measureTimeMillis
-import kotlin.time.measureTime
 
 class SlowNeuron(activationProbability: Float = 0.5f): RandomNeuron(activationProbability){
     override fun touch(sourceId: Int, timeStep: Long) {
