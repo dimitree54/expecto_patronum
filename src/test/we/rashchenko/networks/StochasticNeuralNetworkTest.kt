@@ -1,36 +1,14 @@
 package we.rashchenko.networks
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 import we.rashchenko.base.ExternallyControlledActivity
 import we.rashchenko.base.Feedback
-import we.rashchenko.neurons.Neuron
 import we.rashchenko.neurons.inputs.MirroringNeuron
-import we.rashchenko.neurons.zoo.RandomNeuronSampler
-import java.util.*
+import we.rashchenko.neurons.zoo.RandomNeuron
 
 internal class StochasticNeuralNetworkTest {
-    class SuperExcitedNeuron: Neuron {
-        var internalActive = false
-        override fun touch(sourceId: Int, timeStep: Long) {
-            internalActive = true
-        }
-
-        override fun forgetSource(sourceId: Int) {
-        }
-
-        override fun getFeedback(sourceId: Int): Feedback {
-            return Feedback.VERY_POSITIVE
-        }
-
-        override fun update(feedback: Feedback, timeStep: Long) {
-            internalActive = false
-        }
-
-        override val active: Boolean
-            get() = internalActive
-    }
 
     @Test
     fun allFunctionsTest() {
@@ -39,9 +17,9 @@ internal class StochasticNeuralNetworkTest {
         val nn = StochasticNeuralNetwork()
 
         val ids = mutableSetOf<Int>()
-        val sourceId = nn.addInputNeuron(MirroringNeuron(externallyControlledActivity, SuperExcitedNeuron()))
+        val sourceId = nn.addInputNeuron(MirroringNeuron(externallyControlledActivity, RandomNeuron(1f)))
         repeat(1000){
-            val targetId = nn.add(SuperExcitedNeuron())
+            val targetId = nn.add(RandomNeuron(1f))
             ids.add(targetId)
             nn.addConnection(sourceId, targetId)
         }

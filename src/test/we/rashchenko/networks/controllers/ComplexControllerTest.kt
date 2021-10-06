@@ -33,7 +33,7 @@ internal class ComplexControllerTest {
 
         val controllerFeedbacks = ComplexController(ActivityController(), TimeController()).getControllerFeedbacks(neurons)
         assertEquals(
-            controllerFeedbacks.zip(controllerFeedbacks.indices).sortedBy { it.first }.map{ it.second },
+            controllerFeedbacks.indices.sortedBy {controllerFeedbacks[it]},
             listOf(1, 5, 3, 0, 4, 2)
         )
     }
