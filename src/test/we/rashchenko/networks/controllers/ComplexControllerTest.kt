@@ -13,16 +13,16 @@ internal class ComplexControllerTest {
     @Test
     fun getControllerFeedbacks() {
         val neurons = listOf(
-            ControlledNeuron(RandomNeuron(0.0f)).apply{control=true},
-            ControlledNeuron(SlowNeuron(0.0f)).apply{control=true},
-            ControlledNeuron(RandomNeuron(0.6f)).apply{control=true},
-            ControlledNeuron(SlowNeuron(0.6f)).apply{control=true},
-            ControlledNeuron(RandomNeuron(0.9f)).apply{control=true},
-            ControlledNeuron(SlowNeuron(0.9f)).apply{control=true},
+            ControlledNeuron(RandomNeuron(0.0f)).apply { control = true },
+            ControlledNeuron(SlowNeuron(0.0f)).apply { control = true },
+            ControlledNeuron(RandomNeuron(0.6f)).apply { control = true },
+            ControlledNeuron(SlowNeuron(0.6f)).apply { control = true },
+            ControlledNeuron(RandomNeuron(0.8f)).apply { control = true },
+            ControlledNeuron(SlowNeuron(0.8f)).apply { control = true },
         )
 
-        repeat(1000){ timeStep->
-            neurons.forEach{
+        repeat(1000) { timeStep ->
+            neurons.forEach {
                 it.touch(timeStep, timeStep.toLong())
                 it.update(Feedback.NEUTRAL, timeStep.toLong())
                 it.getFeedback(timeStep)
@@ -31,9 +31,10 @@ internal class ComplexControllerTest {
             }
         }
 
-        val controllerFeedbacks = ComplexController(ActivityController(), TimeController()).getControllerFeedbacks(neurons)
+        val controllerFeedbacks =
+            ComplexController(ActivityController(), TimeController()).getControllerFeedbacks(neurons)
         assertEquals(
-            controllerFeedbacks.indices.sortedBy {controllerFeedbacks[it]},
+            controllerFeedbacks.indices.sortedBy { controllerFeedbacks[it] },
             listOf(1, 5, 3, 0, 4, 2)
         )
     }
