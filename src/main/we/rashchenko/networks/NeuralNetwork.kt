@@ -48,6 +48,13 @@ interface NeuralNetwork : Ticking {
 	fun addConnection(fromNeuronID: Int, toNeuronID: Int): Boolean
 
 	/**
+	 * Remove connection from the graph by specifying source and target nodes of the connection.
+	 * @return true if the connection removal is successful;
+	 *  false if there is no such connection in the neural network
+	 */
+	fun removeConnection(fromNeuronID: Int, toNeuronID: Int): Boolean
+
+	/**
 	 * Get current [Feedback] of the [Neuron] with [neuronID].
 	 * That [Feedback] represent how well that [Neuron] works in a team of all [NeuralNetwork] nodes.
 	 * @return Feedback or null if there is no [Neuron] with that [neuronID] in the [NeuralNetwork].
