@@ -8,7 +8,7 @@ import java.util.*
 /**
  * Exemplar simple implementation of the [Neuron] interface.
  */
-class RandomNeuron(val activationProbability: Float) : Neuron {
+open class RandomNeuron(val activationProbability: Float) : Neuron {
 	private val random = Random()
 
 	/**
@@ -18,7 +18,7 @@ class RandomNeuron(val activationProbability: Float) : Neuron {
 	 */
 	override fun touch(sourceId: Int, timeStep: Long) {
 		if (random.nextFloat() < activationProbability) {
-			active = true
+			internalActive = true
 		}
 	}
 
@@ -39,11 +39,12 @@ class RandomNeuron(val activationProbability: Float) : Neuron {
 	 * that random neuron turns back into default not active state.
 	 */
 	override fun update(feedback: Feedback, timeStep: Long) {
-		active = false
+		internalActive = false
 	}
 
-	override var active: Boolean = false
-		private set
+	private var internalActive = false
+	override val active: Boolean
+		get() = internalActive
 }
 
 
@@ -51,8 +52,8 @@ class RandomNeuron(val activationProbability: Float) : Neuron {
  * Exemplar sampler for the [RandomNeuron]. For demonstrating purposes that neurons sampler is stateful: more successful
  * neuron was, more likely similar neuron will be sampled.
  */
-class RandomNeuronSampler : NeuronsSampler {
-	override val name: String = "RandomNeuronSampler"
+class RandomNeuronSampler(private val amplitude: Float = 0.2f) : NeuronsSampler {
+	override val name: String = "RandomNeuronSampler$amplitude"
 
 	private val random = Random()
 	private val neurons = mutableMapOf<Int, RandomNeuron>()
@@ -66,7 +67,7 @@ class RandomNeuronSampler : NeuronsSampler {
 	 */
 	override fun next(id: Int): Neuron {
 		val neuron = if (feedbacks.isEmpty() || random.nextBoolean()) {
-			RandomNeuron(random.nextFloat() * 0.2f)
+			RandomNeuron(random.nextFloat() * amplitude)
 		} else {
 			RandomNeuron(neurons[feedbacks.maxByOrNull { it.value.value }!!.key]!!.activationProbability)
 		}

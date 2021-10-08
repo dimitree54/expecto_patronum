@@ -14,8 +14,8 @@ Classes for chaotic neural networks. Describes how neurons in the network commun
 ] developed for efficient inference of the chaotic neural network with sparse activations.
 
 # Package we.rashchenko.networks.builders
-Classes describing how chaotic neural network built. Contains logic of the evolution (best neurons proliferation,
- worst neurons pruning). Also, builders determine how newly created neurons wired with existing ones.
+Classes describing how chaotic neural network built. Contains logic of the evolution (proliferation of the best neurons,
+ pruning of the worst neurons). Also, builders determine how newly created neurons wired with existing ones.
 
 # Package we.rashchenko.networks.controllers
 Classes for calculation external feedback for neurons. Except internal collaborative feedback which neurons assign to 
