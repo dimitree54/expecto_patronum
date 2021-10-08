@@ -70,6 +70,19 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
 		return true
 	}
 
+	override fun removeConnection(fromNeuronID: Int, toNeuronID: Int): Boolean {
+		val connectionExist = connections[fromNeuronID]?.contains(toNeuronID)?:false
+		return if (connectionExist){
+			neuronsWithID[toNeuronID]!!.forgetSource(fromNeuronID)
+			connections[fromNeuronID]!!.remove(toNeuronID)
+			backwardConnections[toNeuronID]!!.remove(fromNeuronID)
+			true
+		}
+		else{
+			false
+		}
+	}
+
 	private var nextTickNeurons = mutableSetOf<Int>()
 	private val setAddingLock = Object()
 	override fun tick() {

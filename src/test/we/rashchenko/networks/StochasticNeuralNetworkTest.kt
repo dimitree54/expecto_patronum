@@ -7,6 +7,7 @@ import we.rashchenko.base.ExternallyControlledActivity
 import we.rashchenko.base.Feedback
 import we.rashchenko.neurons.inputs.MirroringNeuron
 import we.rashchenko.neurons.zoo.RandomNeuron
+import kotlin.test.assertFalse
 
 internal class StochasticNeuralNetworkTest {
 
@@ -41,6 +42,13 @@ internal class StochasticNeuralNetworkTest {
         assertTrue(nn.connections[sourceId]!!.toSet() == ids.toSet())
 
         assertTrue(listOf(sourceId).toSet() == nn.inputNeuronIDs.toSet())
+
+        val lastId = ids.last()
+        assertTrue(lastId in nn.connections[sourceId]!!)
+        assertTrue(sourceId !in nn.connections[lastId]!!)
+        assertFalse(nn.removeConnection(lastId, sourceId))
+        assertTrue(nn.removeConnection(sourceId, lastId))
+        assertTrue(lastId !in nn.connections[sourceId]!!)
 
         ids.add(sourceId)
         assertTrue(ids.toSet() == nn.neuronIDs.toSet())
