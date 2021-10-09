@@ -3,7 +3,7 @@ package we.rashchenko.networks
 import we.rashchenko.base.Feedback
 import we.rashchenko.neurons.Neuron
 import we.rashchenko.neurons.inputs.InputNeuron
-import we.rashchenko.utils.ExponentialMovingAverageHotStart
+import we.rashchenko.utils.ExponentialMovingAverage
 import we.rashchenko.utils.randomIds
 
 /**
@@ -23,14 +23,14 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
 	override val connections = mutableMapOf<Int, MutableList<Int>>()
 	private val backwardConnections = mutableMapOf<Int, MutableList<Int>>()
 
-	private val neuronFeedbacks = mutableMapOf<Int, ExponentialMovingAverageHotStart>()
+	private val neuronFeedbacks = mutableMapOf<Int, ExponentialMovingAverage>()
 
 	override fun add(neuron: Neuron): Int {
 		val id = randomIds.next()
 		neuronsWithID[id] = neuron
 		connections[id] = mutableListOf()
 		backwardConnections[id] = mutableListOf()
-		neuronFeedbacks[id] = ExponentialMovingAverageHotStart(0.9)
+		neuronFeedbacks[id] = ExponentialMovingAverage(0.0, 0.9)
 		return id
 	}
 
