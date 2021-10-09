@@ -45,17 +45,36 @@ internal class ControlledNeuronTest {
         controlledNeuron.control = true
         assertEquals(controlledNeuron.control, true)
 
-        assertEquals(controlledNeuron.getAverageTime(), 0.0)
-        assertEquals(controlledNeuron.getAverageActivity(), 0.0)
+        // checking default values
+        assertEquals(controlledNeuron.numControlledGetActive, 0)
+        assertEquals(controlledNeuron.numControlledForget, 0)
+        assertEquals(controlledNeuron.numControlledUpdate, 0)
+        assertEquals(controlledNeuron.numControlledTouch, 0)
+        assertEquals(controlledNeuron.numControlledGetFeedback, 0)
+        assertEquals(controlledNeuron.averageActivity, 0.0)
+        assertEquals(controlledNeuron.averageGetActiveTime, 0.0)
+        assertEquals(controlledNeuron.averageGetFeedbackTime, 0.0)
+        assertEquals(controlledNeuron.averageUpdateTime, 0.0)
+        assertEquals(controlledNeuron.averageTouchTime, 0.0)
+        assertEquals(controlledNeuron.averageForgetTime, 0.0)
 
-        repeat(1000){
+        repeat(100){
             controlledNeuron.touch(it, it.toLong())
             controlledNeuron.update(Feedback.NEUTRAL, it.toLong())
             controlledNeuron.getFeedback(it)
             controlledNeuron.forgetSource(it)
             controlledNeuron.active
         }
-        assertTrue(controlledNeuron.getAverageTime() in 5.0..10.0)
-        assertTrue(controlledNeuron.getAverageActivity() in 0.4..0.6)
+        assertEquals(controlledNeuron.numControlledGetActive, 200)  // note that ControlledNeuron.update also uses getActive
+        assertEquals(controlledNeuron.numControlledForget, 100)
+        assertEquals(controlledNeuron.numControlledUpdate, 100)
+        assertEquals(controlledNeuron.numControlledTouch, 100)
+        assertEquals(controlledNeuron.numControlledGetFeedback, 100)
+        assertTrue(controlledNeuron.averageActivity in 0.4..0.6)
+        assertTrue(controlledNeuron.averageGetActiveTime in 1.0..2.0)
+        assertTrue(controlledNeuron.averageGetFeedbackTime in 1.0..2.0)
+        assertTrue(controlledNeuron.averageUpdateTime in 1.0..2.0)
+        assertTrue(controlledNeuron.averageTouchTime in 1.0..2.0)
+        assertTrue(controlledNeuron.averageForgetTime in 1.0..2.0)
     }
 }

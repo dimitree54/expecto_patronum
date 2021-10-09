@@ -20,7 +20,7 @@ internal class TimeControllerTest {
             ControlledNeuron(SlowNeuron()).apply{control=true},
         )
 
-        repeat(1000){ timeStep->
+        repeat(100){ timeStep->
             neurons.forEach{
                 it.touch(timeStep, timeStep.toLong())
                 it.update(Feedback.NEUTRAL, timeStep.toLong())

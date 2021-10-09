@@ -14,7 +14,7 @@ import kotlin.math.sqrt
  */
 class ActivityController : NeuralNetworkController {
 	override fun getControllerFeedbacks(neurons: List<ControlledNeuron>): List<Feedback> {
-		neurons.map { it.getAverageActivity() }.toDoubleArray().let { activities ->
+		neurons.map { it.averageActivity }.toDoubleArray().let { activities ->
 			val mean = StatUtils.mean(activities)
 			val std = sqrt(StatUtils.variance(activities))
 			// near average activity is good (~1.0), deviation in both sides bad (down to -1.0)
