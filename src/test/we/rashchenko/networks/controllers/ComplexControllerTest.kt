@@ -23,7 +23,7 @@ internal class ComplexControllerTest {
             ControlledNeuron(SlowNeuron(0.8f)).apply { control = true },
         )
 
-        repeat(1000) { timeStep ->
+        repeat(500) { timeStep ->
             neurons.forEach {
                 it.touch(timeStep, timeStep.toLong())
                 it.update(Feedback.NEUTRAL, timeStep.toLong())
