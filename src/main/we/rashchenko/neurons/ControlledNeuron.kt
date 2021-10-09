@@ -2,7 +2,7 @@ package we.rashchenko.neurons
 
 import we.rashchenko.base.Feedback
 import we.rashchenko.networks.controllers.NeuralNetworkController
-import we.rashchenko.utils.ExponentialMovingAverage
+import we.rashchenko.utils.ExponentialMovingAverageHotStart
 import we.rashchenko.utils.ZERO_DIV_EPS
 import kotlin.system.measureTimeMillis
 
@@ -14,7 +14,7 @@ import kotlin.system.measureTimeMillis
 class ControlledNeuron(private val baseNeuron: Neuron) : Neuron by baseNeuron {
 	var control: Boolean = false
 
-	private val averageGetActiveTime = ExponentialMovingAverage(0.0)
+	private val averageGetActiveTime = ExponentialMovingAverageHotStart()
 	override val active: Boolean
 		get() {
 			return if (control) {
@@ -28,7 +28,7 @@ class ControlledNeuron(private val baseNeuron: Neuron) : Neuron by baseNeuron {
 			}
 		}
 
-	private val averageUpdateTime = ExponentialMovingAverage(0.0)
+	private val averageUpdateTime = ExponentialMovingAverageHotStart()
 	private var numControlledActivations = 0
 	private var numControlledTimeSteps = 0
 	override fun update(feedback: Feedback, timeStep: Long) {
@@ -45,7 +45,7 @@ class ControlledNeuron(private val baseNeuron: Neuron) : Neuron by baseNeuron {
 		}
 	}
 
-	private val averageForgetTime = ExponentialMovingAverage(0.0)
+	private val averageForgetTime = ExponentialMovingAverageHotStart()
 	override fun forgetSource(sourceId: Int) {
 		if (control) {
 			measureTimeMillis {
@@ -56,7 +56,7 @@ class ControlledNeuron(private val baseNeuron: Neuron) : Neuron by baseNeuron {
 		}
 	}
 
-	private val averageFeedbackTime = ExponentialMovingAverage(0.0)
+	private val averageFeedbackTime = ExponentialMovingAverageHotStart()
 	override fun getFeedback(sourceId: Int): Feedback {
 		return if (control) {
 			val result: Feedback
@@ -69,7 +69,7 @@ class ControlledNeuron(private val baseNeuron: Neuron) : Neuron by baseNeuron {
 		}
 	}
 
-	private val averageTouchTime = ExponentialMovingAverage(0.0)
+	private val averageTouchTime = ExponentialMovingAverageHotStart()
 	override fun touch(sourceId: Int, timeStep: Long) {
 		if (control) {
 			measureTimeMillis {
