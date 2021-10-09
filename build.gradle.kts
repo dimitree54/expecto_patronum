@@ -32,6 +32,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
 tasks.test {
 	useJUnitPlatform()
+	maxParallelForks = 8
 }
 
 publishing {
