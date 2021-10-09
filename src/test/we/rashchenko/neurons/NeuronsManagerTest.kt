@@ -35,7 +35,7 @@ internal class NeuronsManagerTest {
             add(RandomNeuronSampler(0.0f))
             add(RandomNeuronSampler(1.0f))
         }
-        repeat(10000) {
+        repeat(1000) {
             val neuron = neuronsManager.next(it)
             neuron.touch(0, 0)
             if (neuron.active) {
@@ -47,7 +47,7 @@ internal class NeuronsManagerTest {
         }
         var numActive = 0
         var numPassive = 0
-        repeat(10000) {
+        repeat(100000) {
             val neuron = neuronsManager.next(-it - 1)
             neuron.touch(0, 0)
             if (neuron.active) {
@@ -57,8 +57,8 @@ internal class NeuronsManagerTest {
             }
             neuron.update(Feedback.NEUTRAL, 0)
         }
-        assertTrue(numActive.toDouble() / (numActive + numPassive) > 0.25)
-        assertTrue(numPassive.toDouble() / (numActive + numPassive) < 0.75)
+        assertTrue(numActive.toDouble() / (numActive + numPassive) > 0.2)
+        assertTrue(numPassive.toDouble() / (numActive + numPassive) < 0.8)
     }
 
     @Test
@@ -96,7 +96,7 @@ internal class NeuronsManagerTest {
             add(RandomNeuronSampler(1.0f))
         }
         println(neuronsManager.getSummary())
-        repeat(10000) {
+        repeat(1000) {
             val neuron = neuronsManager.next(it)
             neuron.touch(0, 0)
             if (neuron.active) {
