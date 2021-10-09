@@ -10,19 +10,19 @@ internal class SimpleEnvironmentTest {
 	fun tick() {
 		for (period in listOf(2, 3, 8)) {
 			val env = SimpleEnvironment(period)
-			assertEquals(env.activities[0].active, env.activities[1].active)
+			assertEquals(env.inputActivities[0].active, env.outputActivities[0].active)
 			var numActive = 0
 			var numTotal = 0
-			var activeOnPrevStep = env.activities[0].active
+			var activeOnPrevStep = env.inputActivities[0].active
 			repeat(10000) {
 				env.tick()
-				assertEquals(env.activities[0].active, env.activities[1].active)
+				assertEquals(env.inputActivities[0].active, env.outputActivities[0].active)
 				if (it % period == 0) {
-					activeOnPrevStep = env.activities[0].active
+					activeOnPrevStep = env.inputActivities[0].active
 				} else {
-					assertEquals(env.activities[0].active, activeOnPrevStep)
+					assertEquals(env.inputActivities[0].active, activeOnPrevStep)
 				}
-				if (env.activities[0].active) {
+				if (env.inputActivities[0].active) {
 					numActive++
 				}
 				numTotal++
