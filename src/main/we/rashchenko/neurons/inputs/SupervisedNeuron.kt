@@ -16,7 +16,16 @@ import we.rashchenko.networks.NeuralNetwork
 class SupervisedNeuron(
 	private val externalActivity: Activity, private val baseNeuron: Neuron
 ) : InputNeuron {
-	override fun update(feedback: Feedback, timeStep: Long) = baseNeuron.update(getInternalFeedback(), timeStep)
+	/**
+	 * Switcher for the mode when loss calculated by [getInternalFeedback] is not used to update that neuron
+	 *  and hence not used to [getFeedback] for other neurons.
+	 * That mode may be useful to not introduce validation part of the dataset into neural network
+	 *  (though input part of the validation dataset may be introduced into neural network in unsupervised mode since
+	 *  frozen weights are not supported by the model, so keep it in mind).
+	 */
+	var validationMode: Boolean = false
+	override fun update(feedback: Feedback, timeStep: Long) = baseNeuron.update(
+		if (validationMode) feedback else getInternalFeedback(), timeStep)
 
 	override fun getInternalFeedback(): Feedback =
 		if (externalActivity.active == baseNeuron.active) Feedback.VERY_POSITIVE else Feedback.VERY_NEGATIVE
