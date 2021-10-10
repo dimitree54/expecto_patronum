@@ -1,8 +1,6 @@
 package we.rashchenko.networks.builders
 
-import we.rashchenko.base.Feedback
 import we.rashchenko.base.ObservableActivities
-import we.rashchenko.base.getAccuracy
 import we.rashchenko.environments.Environment
 import we.rashchenko.environments.InputOutputEnvironment
 import we.rashchenko.environments.SimpleEnvironment
@@ -33,12 +31,4 @@ interface NeuralNetworkWithInputBuilder : NeuralNetworkBuilder {
 	 * @return true if environment was successfully remove, false if there is not such [environmentID]
 	 */
 	fun removeEnvironment(environmentID: Int): Boolean
-
-	/**
-	 * Get [InputNeuron.getInternalFeedback] fot each neuron connected to [InputOutputEnvironment.outputActivities].
-	 * For example, that feedbacks may be used to calculate accuracy of the model with [getAccuracy] function.
-	 * @param environmentID id of the environment output activities of which will be estimated
-	 * @param
-	 */
-	fun getOutputFeedbacks(environmentID: Int): Collection<Feedback>?
 }

@@ -23,11 +23,3 @@ data class Feedback(val value: Double) : Comparable<Feedback> {
 		return value.compareTo(other.value)
 	}
 }
-
-/**
- * Counts accuracy of [Collection]<[Feedback]>.
- * All [Feedback]s higher than [Feedback.NEUTRAL] considered as positive, others as negative.
- */
-fun getAccuracy(feedbacks: Collection<Feedback>): Double{
-	return feedbacks.count { it > Feedback.NEUTRAL }.toDouble() / feedbacks.size
-}
