@@ -2,6 +2,7 @@ package we.rashchenko.networks
 
 import we.rashchenko.neurons.Neuron
 import we.rashchenko.neurons.inputs.InputNeuron
+import we.rashchenko.utils.MetricsCalculator
 
 /**
  * [NeuralNetwork] with some [Neuron]-nodes specially marked as [InputNeuron].
@@ -27,4 +28,14 @@ interface NeuralNetworkWithInput : NeuralNetwork {
      * Now that [InputNeuron] will be referred with that id in [neuronIDs] and [connections]
      */
     fun addInputNeuron(neuron: InputNeuron): Int
+
+    /**
+     * Get the [InputNeuron] with [neuronID]. Note that this method reveals [Neuron] privacy so be careful using it.
+     * Do not let the system become discriminative based on [Neuron]'s type.
+     * We need that method to control or observe neurons from outside the [NeuralNetwork].
+     * For example, it is used by [MetricsCalculator]
+     * @return [InputNeuron] hidden under [neuronID]. Returns null if there is no such ID at [NeuralNetwork] or [Neuron]
+     *  under that [neuronID] is not [InputNeuron]
+     */
+    fun getInputNeuron(neuronID: Int): InputNeuron?
 }

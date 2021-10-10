@@ -118,6 +118,8 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
 
     override fun getNeuron(neuronID: Int): Neuron? = neuronsWithID[neuronID]
 
+    override fun getInputNeuron(neuronID: Int): InputNeuron? = inputNeuronsWithID[neuronID]
+
     private fun touch(sourceID: Int, receiverID: Int) {
         val receiver = neuronsWithID[receiverID]!!
         synchronized(receiver) {
