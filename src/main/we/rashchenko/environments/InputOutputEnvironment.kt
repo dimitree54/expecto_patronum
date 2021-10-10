@@ -9,8 +9,8 @@ import we.rashchenko.base.HiddenActivity
  * Fot example for classical supervised learning there is inputs and outputs.
  */
 interface InputOutputEnvironment : Environment {
-    override val activities: Collection<Activity>
+    override val activities: List<Activity>
         get() = listOf(inputActivities, outputActivities).flatten()
-    val inputActivities: Collection<Activity>
-    val outputActivities: Collection<HiddenActivity>
+    val inputActivities: List<Activity>
+    val outputActivities: List<HiddenActivity>
 }

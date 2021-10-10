@@ -3,6 +3,7 @@ package we.rashchenko.environments
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFalse
 
 internal class SimpleEnvironmentTest {
 
@@ -29,5 +30,19 @@ internal class SimpleEnvironmentTest {
             }
             assertTrue(numActive.toFloat() / numTotal in 0.4f..0.6f)
         }
+    }
+
+    @Test
+    fun setValidationMode() {
+        val env = SimpleEnvironment(1)
+        assertFalse(env.outputActivities.first().hidden)
+        env.validationMode = true
+        assertTrue(env.outputActivities.first().hidden)
+        env.validationMode = true
+        assertTrue(env.outputActivities.first().hidden)
+        env.validationMode = false
+        assertFalse(env.outputActivities.first().hidden)
+        env.validationMode = false
+        assertFalse(env.outputActivities.first().hidden)
     }
 }

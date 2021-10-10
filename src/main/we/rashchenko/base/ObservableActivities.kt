@@ -13,5 +13,5 @@ interface ObservableActivities {
     /**
      * Public (observable) [Activities][Activity] of the instance.
      */
-    val activities: Collection<Activity>
+    val activities: List<Activity>
 }

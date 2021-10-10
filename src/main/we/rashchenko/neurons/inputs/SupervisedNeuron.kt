@@ -20,11 +20,10 @@ class SupervisedNeuron(
         if (externalActivity.hidden) feedback else getInternalFeedback(), timeStep
     )
 
-    override fun getInternalFeedback(): Feedback{
+    override fun getInternalFeedback(): Feedback {
         return if (externalActivity.hidden) {
             Feedback.NEUTRAL
-        }
-        else{
+        } else {
             if (externalActivity.active == baseNeuron.active) Feedback.VERY_POSITIVE else Feedback.VERY_NEGATIVE
         }
     }
