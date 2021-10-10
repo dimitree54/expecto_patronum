@@ -18,31 +18,31 @@ import we.rashchenko.base.Feedback
  * There you can suggest solutions how to integrate such restriction into the code architecture instead of text rules.
  */
 interface NeuronsSampler {
-	/**
-	 * Unique name of your sampler.
-	 * Check naming conventions at [ChNN competition rules](https://dimitree54.github.io/rules/).
-	 */
-	val name: String
+    /**
+     * Unique name of your sampler.
+     * Check naming conventions at [ChNN competition rules](https://dimitree54.github.io/rules/).
+     */
+    val name: String
 
-	/**
-	 * Sample the next [Neuron].
-	 * @param id Under that id [reportFeedback] and [reportDeath] will report about how good the sampled [Neuron] is.
-	 * @return sampled neuron. Note that storing reference to the returned [Neuron]
-	 *  is prohibited by [ChNN competition rules](https://dimitree54.github.io/rules/).
-	 */
-	fun next(id: Int): Neuron
+    /**
+     * Sample the next [Neuron].
+     * @param id Under that id [reportFeedback] and [reportDeath] will report about how good the sampled [Neuron] is.
+     * @return sampled neuron. Note that storing reference to the returned [Neuron]
+     *  is prohibited by [ChNN competition rules](https://dimitree54.github.io/rules/).
+     */
+    fun next(id: Int): Neuron
 
-	/**
-	 * Report about how good the [Neuron] with [id] is.
-	 * Using that info [NeuronsSampler] can modify behavior to sample more successful neurons in the future.
-	 */
-	fun reportFeedback(id: Int, feedback: Feedback)
+    /**
+     * Report about how good the [Neuron] with [id] is.
+     * Using that info [NeuronsSampler] can modify behavior to sample more successful neurons in the future.
+     */
+    fun reportFeedback(id: Int, feedback: Feedback)
 
-	/**
-	 * Report that the [Neuron] with [id] was so bad that could not stand natural selection and died.
-	 * You can remove saved info about that [Neuron] now
-	 *  (it is guaranteed that there will be no [reportFeedback] for that [id] anymore).
-	 * Or you can save info about that [Neuron] to not sample such bad neurons in the future.
-	 */
-	fun reportDeath(id: Int)
+    /**
+     * Report that the [Neuron] with [id] was so bad that could not stand natural selection and died.
+     * You can remove saved info about that [Neuron] now
+     *  (it is guaranteed that there will be no [reportFeedback] for that [id] anymore).
+     * Or you can save info about that [Neuron] to not sample such bad neurons in the future.
+     */
+    fun reportDeath(id: Int)
 }

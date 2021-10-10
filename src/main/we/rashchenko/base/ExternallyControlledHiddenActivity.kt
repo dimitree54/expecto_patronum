@@ -7,6 +7,6 @@ package we.rashchenko.base
  * Create an [ExternallyControlledHiddenActivity], not [active] by default.
  */
 class ExternallyControlledHiddenActivity : HiddenActivity {
-	override var hidden: Boolean = false
-	override var active: Boolean = false
+    override var hidden: Boolean = false
+    override var active: Boolean = false
 }

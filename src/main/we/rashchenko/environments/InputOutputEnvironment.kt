@@ -8,7 +8,7 @@ import we.rashchenko.base.HiddenActivity
  * That split allows to treat them differently.
  * Fot example for classical supervised learning there is inputs and outputs.
  */
-interface InputOutputEnvironment: Environment {
+interface InputOutputEnvironment : Environment {
     override val activities: Collection<Activity>
         get() = listOf(inputActivities, outputActivities).flatten()
     val inputActivities: Collection<Activity>

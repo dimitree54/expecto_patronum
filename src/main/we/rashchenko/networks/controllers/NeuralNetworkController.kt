@@ -9,8 +9,8 @@ import we.rashchenko.neurons.ControlledNeuron
  *  [NeuralNetwork] [ControlledNeuron]s.
  */
 interface NeuralNetworkController {
-	/**
-	 * Get external (based on global info) [Feedback] for each [ControlledNeuron] in [neurons]
-	 */
-	fun getControllerFeedbacks(neurons: List<ControlledNeuron>): List<Feedback>
+    /**
+     * Get external (based on global info) [Feedback] for each [ControlledNeuron] in [neurons]
+     */
+    fun getControllerFeedbacks(neurons: List<ControlledNeuron>): List<Feedback>
 }

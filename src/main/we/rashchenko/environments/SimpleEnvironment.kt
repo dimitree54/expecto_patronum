@@ -10,21 +10,21 @@ import java.util.*
  * These two nodes always either both active or not active (they are synchronised).
  */
 class SimpleEnvironment(private val tickPeriod: Int) : InputOutputEnvironment {
-	private val size = 1
-	override val inputActivities = List(size) { ExternallyControlledActivity() }
-	override val outputActivities = List(size) { ExternallyControlledHiddenActivity() }
-	override var timeStep: Long = 0
-		private set
+    private val size = 1
+    override val inputActivities = List(size) { ExternallyControlledActivity() }
+    override val outputActivities = List(size) { ExternallyControlledHiddenActivity() }
+    override var timeStep: Long = 0
+        private set
 
-	private val random = Random()
-	override fun tick() {
-		if (timeStep % tickPeriod == 0L) {
-			for (i in 0 until size){
-				val newValue = random.nextBoolean()
-				inputActivities[i].active = newValue
-				outputActivities[i].active = newValue
-			}
-		}
-		timeStep++
-	}
+    private val random = Random()
+    override fun tick() {
+        if (timeStep % tickPeriod == 0L) {
+            for (i in 0 until size) {
+                val newValue = random.nextBoolean()
+                inputActivities[i].active = newValue
+                outputActivities[i].active = newValue
+            }
+        }
+        timeStep++
+    }
 }

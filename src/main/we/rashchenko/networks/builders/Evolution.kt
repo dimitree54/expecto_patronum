@@ -28,37 +28,37 @@ import java.util.*
  *  @param selectionProbability probability of the selection on the [tick]
  */
 class Evolution(
-	builder: NeuralNetworkBuilder,
-	private val neuronsForSelection: Int,
-	private val warningsBeforeKill: Int,
-	private val selectionProbability: Double
+    builder: NeuralNetworkBuilder,
+    private val neuronsForSelection: Int,
+    private val warningsBeforeKill: Int,
+    private val selectionProbability: Double
 ) : Ticking, NeuralNetworkBuilder by builder {
-	private val warnings = mutableMapOf<Int, Int>()
-	private val random = Random()
-	override var timeStep: Long = 0
-		private set
+    private val warnings = mutableMapOf<Int, Int>()
+    private val random = Random()
+    override var timeStep: Long = 0
+        private set
 
-	override fun tick() {
-		if (random.nextDouble() > selectionProbability) {
-			return
-		}
-		val losers = WorstNNeuronIDs(neuronsForSelection)
-		neuralNetwork.neuronIDs.forEach { neuronID ->
-			val neuronFeedback = neuralNetwork.getFeedback(neuronID)!!
-			losers.add(Pair(neuronID, neuronFeedback))
-		}
-		losers.forEach { (neuronID, feedback) ->
-			val newWarningsValue = warnings.getOrDefault(neuronID, 0) + 1
-			warnings[neuronID] = newWarningsValue
-			if (newWarningsValue > warningsBeforeKill) {
-				if (remove(neuronID)) {
-					addNeuron()
-				} else {
-					// warning for the bad neuron
-					neuralNetwork.getNeuron(neuronID)!!.update(feedback, neuralNetwork.timeStep)
-				}
-			}
-		}
-		timeStep++
-	}
+    override fun tick() {
+        if (random.nextDouble() > selectionProbability) {
+            return
+        }
+        val losers = WorstNNeuronIDs(neuronsForSelection)
+        neuralNetwork.neuronIDs.forEach { neuronID ->
+            val neuronFeedback = neuralNetwork.getFeedback(neuronID)!!
+            losers.add(Pair(neuronID, neuronFeedback))
+        }
+        losers.forEach { (neuronID, feedback) ->
+            val newWarningsValue = warnings.getOrDefault(neuronID, 0) + 1
+            warnings[neuronID] = newWarningsValue
+            if (newWarningsValue > warningsBeforeKill) {
+                if (remove(neuronID)) {
+                    addNeuron()
+                } else {
+                    // warning for the bad neuron
+                    neuralNetwork.getNeuron(neuronID)!!.update(feedback, neuralNetwork.timeStep)
+                }
+            }
+        }
+        timeStep++
+    }
 }

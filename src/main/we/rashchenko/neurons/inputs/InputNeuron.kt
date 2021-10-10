@@ -12,8 +12,8 @@ import we.rashchenko.neurons.Neuron
  *  neurons.
  */
 interface InputNeuron : Neuron {
-	/**
-	 * Estimate its own feedback.
-	 */
-	fun getInternalFeedback(): Feedback
+    /**
+     * Estimate its own feedback.
+     */
+    fun getInternalFeedback(): Feedback
 }

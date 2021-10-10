@@ -3,7 +3,6 @@ package we.rashchenko.networks.controllers
 import we.rashchenko.base.Feedback
 import we.rashchenko.neurons.ControlledNeuron
 import we.rashchenko.utils.clip
-import java.lang.IllegalArgumentException
 
 /**
  * [NeuralNetworkController] that calls one or more other [controllers]
@@ -15,7 +14,8 @@ import java.lang.IllegalArgumentException
  */
 class ComplexController(private val controllers: List<NeuralNetworkController>, weights: List<Double>? = null) :
     NeuralNetworkController {
-	private val weights = weights ?: List(controllers.size){ 1.0 / controllers.size }
+    private val weights = weights ?: List(controllers.size) { 1.0 / controllers.size }
+
     init {
         if (controllers.isEmpty()) {
             throw IllegalArgumentException("no controllers provided")
