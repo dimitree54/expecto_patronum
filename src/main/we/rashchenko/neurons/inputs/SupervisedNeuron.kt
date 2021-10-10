@@ -14,7 +14,7 @@ import we.rashchenko.neurons.Neuron
  *  but does not allow external activity to initially appear at [NeuralNetwork].
  */
 class SupervisedNeuron(
-    private val externalActivity: HiddenActivity, private val baseNeuron: Neuron
+    override val externalActivity: HiddenActivity, override val baseNeuron: Neuron
 ) : InputNeuron {
     override fun update(feedback: Feedback, timeStep: Long) = baseNeuron.update(
         if (externalActivity.hidden) feedback else getInternalFeedback(), timeStep

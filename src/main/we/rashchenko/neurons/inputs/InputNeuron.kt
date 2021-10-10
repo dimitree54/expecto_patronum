@@ -1,5 +1,6 @@
 package we.rashchenko.neurons.inputs
 
+import we.rashchenko.base.Activity
 import we.rashchenko.base.Feedback
 import we.rashchenko.networks.NeuralNetwork
 import we.rashchenko.neurons.Neuron
@@ -12,6 +13,8 @@ import we.rashchenko.neurons.Neuron
  *  neurons.
  */
 interface InputNeuron : Neuron {
+    val externalActivity: Activity
+    val baseNeuron: Neuron
     /**
      * Estimate its own feedback.
      */
