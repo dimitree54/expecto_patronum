@@ -9,3 +9,4 @@ import we.rashchenko.networks.NeuralNetwork
  * It is alive ([Ticking]) and has some public [ObservableActivities]
  */
 interface Environment : Ticking, ObservableActivities
+

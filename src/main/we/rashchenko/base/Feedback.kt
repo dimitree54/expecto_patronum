@@ -7,19 +7,19 @@ package we.rashchenko.base
  * Feedback ==0 is neutral.
  */
 data class Feedback(val value: Double) : Comparable<Feedback> {
-	init {
-		if (value !in -1.0..1.0) {
-			throw IllegalArgumentException("Feedback should be in range [-1, 1]")
-		}
-	}
+    init {
+        if (value !in -1.0..1.0) {
+            throw IllegalArgumentException("Feedback should be in range [-1, 1]")
+        }
+    }
 
-	companion object {
-		val VERY_POSITIVE = Feedback(1.0)
-		val VERY_NEGATIVE = Feedback(-1.0)
-		val NEUTRAL = Feedback(0.0)
-	}
+    companion object {
+        val VERY_POSITIVE = Feedback(1.0)
+        val VERY_NEGATIVE = Feedback(-1.0)
+        val NEUTRAL = Feedback(0.0)
+    }
 
-	override fun compareTo(other: Feedback): Int {
-		return value.compareTo(other.value)
-	}
+    override fun compareTo(other: Feedback): Int {
+        return value.compareTo(other.value)
+    }
 }

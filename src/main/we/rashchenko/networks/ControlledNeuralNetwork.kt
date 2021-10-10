@@ -34,79 +34,79 @@ import java.util.*
  *  (internal feedback weight will be 1-[controllerFeedbackWeight])
  */
 class ControlledNeuralNetwork(
-	private val baseNeuralNetwork: NeuralNetworkWithInput,
-	private val controller: NeuralNetworkController,
-	private val auditProbability: Double,
-	private val updateControllerFeedbackPeriod: Long,
-	private val controllerFeedbackWeight: Double
+    private val baseNeuralNetwork: NeuralNetworkWithInput,
+    private val controller: NeuralNetworkController,
+    private val auditProbability: Double,
+    private val updateControllerFeedbackPeriod: Long,
+    private val controllerFeedbackWeight: Double
 ) : NeuralNetworkWithInput by baseNeuralNetwork {
-	private val controlledNeuronsWithID = mutableMapOf<Int, ControlledNeuron>()
-	private val controllerFeedbacks = mutableMapOf<Int, Feedback>()
+    private val controlledNeuronsWithID = mutableMapOf<Int, ControlledNeuron>()
+    private val controllerFeedbacks = mutableMapOf<Int, Feedback>()
 
-	override fun add(neuron: Neuron): Int {
-		return ControlledNeuron(neuron).let {
-			baseNeuralNetwork.add(it).also { id ->
-				controlledNeuronsWithID[id] = it
-				controllerFeedbacks[id] = Feedback.NEUTRAL
-			}
-		}
-	}
+    override fun add(neuron: Neuron): Int {
+        return ControlledNeuron(neuron).let {
+            baseNeuralNetwork.add(it).also { id ->
+                controlledNeuronsWithID[id] = it
+                controllerFeedbacks[id] = Feedback.NEUTRAL
+            }
+        }
+    }
 
-	override fun addInputNeuron(neuron: InputNeuron): Int {
-		// NOTE: we do not control input neurons as they anyway ignore external feedback, just specifying default
-		return baseNeuralNetwork.addInputNeuron(neuron).also { neuronID ->
-			controllerFeedbacks[neuronID] = Feedback.NEUTRAL
-		}
-	}
+    override fun addInputNeuron(neuron: InputNeuron): Int {
+        // NOTE: we do not control input neurons as they anyway ignore external feedback, just specifying default
+        return baseNeuralNetwork.addInputNeuron(neuron).also { neuronID ->
+            controllerFeedbacks[neuronID] = Feedback.NEUTRAL
+        }
+    }
 
-	override fun remove(neuronID: Int): Boolean {
-		return baseNeuralNetwork.remove(neuronID).also { removed ->
-			if (removed) {
-				controlledNeuronsWithID.remove(neuronID)
-				controllerFeedbacks.remove(neuronID)
-			}
-		}
-	}
+    override fun remove(neuronID: Int): Boolean {
+        return baseNeuralNetwork.remove(neuronID).also { removed ->
+            if (removed) {
+                controlledNeuronsWithID.remove(neuronID)
+                controllerFeedbacks.remove(neuronID)
+            }
+        }
+    }
 
-	private val random = Random()
-	private var control = false
-	override fun tick() {
-		if (control) {
-			control = false
-			controlledNeuronsWithID.values.forEach { it.control = false }
-		}
-		if (random.nextDouble() < auditProbability) {
-			control = true
-			controlledNeuronsWithID.values.forEach { it.control = true }
-		}
-		baseNeuralNetwork.tick()
-		if (timeStep % updateControllerFeedbackPeriod == 0L) {
-			val (neuronIDsList, controlledNeuronsList) = controlledNeuronsWithID.toList().unzip()
-			val feedbacks = controller.getControllerFeedbacks(controlledNeuronsList)
-			neuronIDsList.forEachIndexed { i, id ->
-				controllerFeedbacks[id] = feedbacks[i]
-			}
-		}
-	}
+    private val random = Random()
+    private var control = false
+    override fun tick() {
+        if (control) {
+            control = false
+            controlledNeuronsWithID.values.forEach { it.control = false }
+        }
+        if (random.nextDouble() < auditProbability) {
+            control = true
+            controlledNeuronsWithID.values.forEach { it.control = true }
+        }
+        baseNeuralNetwork.tick()
+        if (timeStep % updateControllerFeedbackPeriod == 0L) {
+            val (neuronIDsList, controlledNeuronsList) = controlledNeuronsWithID.toList().unzip()
+            val feedbacks = controller.getControllerFeedbacks(controlledNeuronsList)
+            neuronIDsList.forEachIndexed { i, id ->
+                controllerFeedbacks[id] = feedbacks[i]
+            }
+        }
+    }
 
-	override fun getFeedback(neuronID: Int): Feedback? {
-		return getExternalFeedback(neuronID)?.let { controllerFeedback ->
-			getInternalFeedback(neuronID)?.let { collaborativeFeedback ->
-				Feedback(
-					collaborativeFeedback.value * (1 - controllerFeedbackWeight) +
-							controllerFeedback.value * controllerFeedbackWeight
-				)
-			}
-		}
-	}
+    override fun getFeedback(neuronID: Int): Feedback? {
+        return getExternalFeedback(neuronID)?.let { controllerFeedback ->
+            getInternalFeedback(neuronID)?.let { collaborativeFeedback ->
+                Feedback(
+                    collaborativeFeedback.value * (1 - controllerFeedbackWeight) +
+                            controllerFeedback.value * controllerFeedbackWeight
+                )
+            }
+        }
+    }
 
-	/**
-	 * Since [getFeedback] now returns weighted sum of internal and external feedbacks, we need [getExternalFeedback] and [getInternalFeedback] to get original values of external and internal feedback. We need that mainly for logging and visualisation purposes, that functions are not used by [Evolution].
-	 */
-	fun getExternalFeedback(neuronID: Int): Feedback? = controllerFeedbacks[neuronID]
+    /**
+     * Since [getFeedback] now returns weighted sum of internal and external feedbacks, we need [getExternalFeedback] and [getInternalFeedback] to get original values of external and internal feedback. We need that mainly for logging and visualisation purposes, that functions are not used by [Evolution].
+     */
+    fun getExternalFeedback(neuronID: Int): Feedback? = controllerFeedbacks[neuronID]
 
-	/**
-	 * Since [getFeedback] now returns weighted sum of internal and external feedbacks, we need [getExternalFeedback] and [getInternalFeedback] to get original values of external and internal feedback. We need that mainly for logging and visualisation purposes, that functions are not used by [Evolution].
-	 */
-	fun getInternalFeedback(neuronID: Int): Feedback? = baseNeuralNetwork.getFeedback(neuronID)
+    /**
+     * Since [getFeedback] now returns weighted sum of internal and external feedbacks, we need [getExternalFeedback] and [getInternalFeedback] to get original values of external and internal feedback. We need that mainly for logging and visualisation purposes, that functions are not used by [Evolution].
+     */
+    fun getInternalFeedback(neuronID: Int): Feedback? = baseNeuralNetwork.getFeedback(neuronID)
 }

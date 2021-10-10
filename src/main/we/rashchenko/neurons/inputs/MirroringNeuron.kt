@@ -14,17 +14,17 @@ import we.rashchenko.neurons.Neuron
  *  but bad for training on sometimes missing activity.
  */
 class MirroringNeuron(
-	private val externalActivity: Activity, private val baseNeuron: Neuron
+    override val externalActivity: Activity, override val baseNeuron: Neuron
 ) : InputNeuron {
-	override fun update(feedback: Feedback, timeStep: Long) = baseNeuron.update(getInternalFeedback(), timeStep)
+    override fun update(feedback: Feedback, timeStep: Long) = baseNeuron.update(getInternalFeedback(), timeStep)
 
-	override fun getInternalFeedback(): Feedback =
-		if (externalActivity.active == baseNeuron.active) Feedback.VERY_POSITIVE else Feedback.VERY_NEGATIVE
+    override fun getInternalFeedback(): Feedback =
+        if (externalActivity.active == baseNeuron.active) Feedback.VERY_POSITIVE else Feedback.VERY_NEGATIVE
 
-	override fun touch(sourceId: Int, timeStep: Long) = baseNeuron.touch(sourceId, timeStep)
-	override fun forgetSource(sourceId: Int) = baseNeuron.forgetSource(sourceId)
-	override fun getFeedback(sourceId: Int): Feedback = baseNeuron.getFeedback(sourceId)
+    override fun touch(sourceId: Int, timeStep: Long) = baseNeuron.touch(sourceId, timeStep)
+    override fun forgetSource(sourceId: Int) = baseNeuron.forgetSource(sourceId)
+    override fun getFeedback(sourceId: Int): Feedback = baseNeuron.getFeedback(sourceId)
 
-	override val active: Boolean
-		get() = externalActivity.active
+    override val active: Boolean
+        get() = externalActivity.active
 }

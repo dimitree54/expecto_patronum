@@ -1,9 +1,9 @@
 package we.rashchenko.neurons.inputs
 
-import we.rashchenko.base.Activity
 import we.rashchenko.base.Feedback
-import we.rashchenko.neurons.Neuron
+import we.rashchenko.base.HiddenActivity
 import we.rashchenko.networks.NeuralNetwork
+import we.rashchenko.neurons.Neuron
 
 /**
  * Implementation of the [InputNeuron] that copies value of the internal [baseNeuron]
@@ -14,17 +14,24 @@ import we.rashchenko.networks.NeuralNetwork
  *  but does not allow external activity to initially appear at [NeuralNetwork].
  */
 class SupervisedNeuron(
-	private val externalActivity: Activity, private val baseNeuron: Neuron
+    override val externalActivity: HiddenActivity, override val baseNeuron: Neuron
 ) : InputNeuron {
-	override fun update(feedback: Feedback, timeStep: Long) = baseNeuron.update(getInternalFeedback(), timeStep)
+    override fun update(feedback: Feedback, timeStep: Long) = baseNeuron.update(
+        if (externalActivity.hidden) feedback else getInternalFeedback(), timeStep
+    )
 
-	override fun getInternalFeedback(): Feedback =
-		if (externalActivity.active == baseNeuron.active) Feedback.VERY_POSITIVE else Feedback.VERY_NEGATIVE
+    override fun getInternalFeedback(): Feedback {
+        return if (externalActivity.hidden) {
+            Feedback.NEUTRAL
+        } else {
+            if (externalActivity.active == baseNeuron.active) Feedback.VERY_POSITIVE else Feedback.VERY_NEGATIVE
+        }
+    }
 
-	override fun touch(sourceId: Int, timeStep: Long) = baseNeuron.touch(sourceId, timeStep)
-	override fun forgetSource(sourceId: Int) = baseNeuron.forgetSource(sourceId)
-	override fun getFeedback(sourceId: Int): Feedback = baseNeuron.getFeedback(sourceId)
+    override fun touch(sourceId: Int, timeStep: Long) = baseNeuron.touch(sourceId, timeStep)
+    override fun forgetSource(sourceId: Int) = baseNeuron.forgetSource(sourceId)
+    override fun getFeedback(sourceId: Int): Feedback = baseNeuron.getFeedback(sourceId)
 
-	override val active: Boolean
-		get() = baseNeuron.active
+    override val active: Boolean
+        get() = baseNeuron.active
 }

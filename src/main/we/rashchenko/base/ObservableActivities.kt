@@ -1,7 +1,7 @@
 package we.rashchenko.base
 
-import we.rashchenko.networks.NeuralNetwork
 import we.rashchenko.environments.Environment
+import we.rashchenko.networks.NeuralNetwork
 
 /**
  * Collection of public (observable) [Activities][Activity].
@@ -10,8 +10,8 @@ import we.rashchenko.environments.Environment
  * That will allow other instances to observe these public activities.
  */
 interface ObservableActivities {
-	/**
-	 * Public (observable) [Activities][Activity] of the instance.
-	 */
-	val activities: Collection<Activity>
+    /**
+     * Public (observable) [Activities][Activity] of the instance.
+     */
+    val activities: List<Activity>
 }

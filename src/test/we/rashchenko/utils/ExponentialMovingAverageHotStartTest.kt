@@ -1,8 +1,7 @@
 package we.rashchenko.utils
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 
 internal class ExponentialMovingAverageHotStartTest {
     private val eps = 0.00001
@@ -42,7 +41,7 @@ internal class ExponentialMovingAverageHotStartTest {
     }
 
     @Test
-    fun testDefaultEPS(){
+    fun testDefaultEPS() {
         assertEquals(
             ExponentialMovingAverageHotStart(0.99).run {
                 update(0.0)

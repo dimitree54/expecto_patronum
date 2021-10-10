@@ -7,5 +7,5 @@ package we.rashchenko.base
  * Create an [ExternallyControlledActivity], not [active] by default.
  */
 class ExternallyControlledActivity : Activity {
-	override var active: Boolean = false
+    override var active: Boolean = false
 }

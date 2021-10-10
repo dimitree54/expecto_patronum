@@ -11,15 +11,15 @@ internal class ActivityControllerTest {
     @Test
     fun getControllerFeedbacks() {
         val neurons = listOf(
-            ControlledNeuron(RandomNeuron(0f)).apply{control=true},
-            ControlledNeuron(RandomNeuron(0.5f)).apply{control=true},
-            ControlledNeuron(RandomNeuron(0.5f)).apply{control=true},
-            ControlledNeuron(RandomNeuron(0.5f)).apply{control=true},
-            ControlledNeuron(RandomNeuron(1f)).apply{control=true},
+            ControlledNeuron(RandomNeuron(0f)).apply { control = true },
+            ControlledNeuron(RandomNeuron(0.5f)).apply { control = true },
+            ControlledNeuron(RandomNeuron(0.5f)).apply { control = true },
+            ControlledNeuron(RandomNeuron(0.5f)).apply { control = true },
+            ControlledNeuron(RandomNeuron(1f)).apply { control = true },
         )
 
-        repeat(1000){ timeStep->
-            neurons.forEach{
+        repeat(1000) { timeStep ->
+            neurons.forEach {
                 it.touch(timeStep, timeStep.toLong())
                 it.update(Feedback.NEUTRAL, timeStep.toLong())
             }
