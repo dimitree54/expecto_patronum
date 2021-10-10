@@ -22,24 +22,24 @@ internal class ControlledNeuralNetworkTest {
             RandomNeuron(0.6f),
             RandomNeuron(0.9f),
         )
-        val ids = neurons.map{nn.add(it)}
+        val ids = neurons.map { nn.add(it) }
 
-        val externallyControlledActivity = ExternallyControlledActivity().apply{active=true}
+        val externallyControlledActivity = ExternallyControlledActivity().apply { active = true }
         val sourceId = nn.addInputNeuron(MirroringNeuron(externallyControlledActivity, RandomNeuron(1f)))
-        ids.forEach{nn.addConnection(sourceId, it)}
+        ids.forEach { nn.addConnection(sourceId, it) }
 
-        repeat(1000){
+        repeat(1000) {
             nn.tick()
         }
 
-        ids.forEach{ assertEquals(nn.getInternalFeedback(it), Feedback.NEUTRAL) }
+        ids.forEach { assertEquals(nn.getInternalFeedback(it), Feedback.NEUTRAL) }
 
         assertEquals(
-            ids.indices.sortedBy {nn.getFeedback(ids[it])},
+            ids.indices.sortedBy { nn.getFeedback(ids[it]) },
             listOf(0, 2, 1)
         )
         assertEquals(
-            ids.indices.sortedBy {nn.getExternalFeedback(ids[it])},
+            ids.indices.sortedBy { nn.getExternalFeedback(ids[it]) },
             listOf(0, 2, 1)
         )
 

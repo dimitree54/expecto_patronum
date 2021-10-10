@@ -19,14 +19,14 @@ internal class StochasticNeuralNetworkTest {
 
         val ids = mutableSetOf<Int>()
         val sourceId = nn.addInputNeuron(MirroringNeuron(externallyControlledActivity, RandomNeuron(1f)))
-        repeat(1000){
+        repeat(1000) {
             val targetId = nn.add(RandomNeuron(1f))
             ids.add(targetId)
             nn.addConnection(sourceId, targetId)
         }
         nn.tick()
         nn.tick()
-        nn.neuronIDs.forEach{
+        nn.neuronIDs.forEach {
             assertEquals(nn.getNeuron(it)!!.active, true)
         }
 
@@ -34,8 +34,8 @@ internal class StochasticNeuralNetworkTest {
 
         assertEquals(nn.timeStep, 2)
 
-        nn.connections.keys.forEach { key->
-            if (key != sourceId){
+        nn.connections.keys.forEach { key ->
+            if (key != sourceId) {
                 assertEquals(nn.connections[key]!!.size, 0)
             }
         }

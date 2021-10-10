@@ -1,8 +1,7 @@
 package we.rashchenko.networks.builders
 
-import org.junit.jupiter.api.Test
-
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import we.rashchenko.environments.SimpleEnvironment
 import we.rashchenko.networks.StochasticNeuralNetwork
 import we.rashchenko.neurons.zoo.RandomNeuronSampler
@@ -43,29 +42,29 @@ internal class NeuralNetworkIn2DBuilderTest {
         val builder = NeuralNetworkIn2DBuilder(nn, sampler)
         builder.addNeuron()
         builder.addEnvironment(env)
-        nn.neuronIDs.forEach{
+        nn.neuronIDs.forEach {
             assertTrue(builder.getPosition(it) != null)
         }
     }
 
     @Test
-    fun testInputNeuronReplacement(){
+    fun testInputNeuronReplacement() {
         val nn = StochasticNeuralNetwork()
         val sampler = RandomNeuronSampler()
         val env = SimpleEnvironment(5)
         val builder = NeuralNetworkIn2DBuilder(nn, sampler)
         builder.addEnvironment(env)
         val oldIDs = nn.neuronIDs.toSet()
-        val oldPositions = oldIDs.map{builder.getPosition(it)}.toSet()
-        oldIDs.map{builder.remove(it)}
+        val oldPositions = oldIDs.map { builder.getPosition(it) }.toSet()
+        oldIDs.map { builder.remove(it) }
         assertTrue(nn.inputNeuronIDs.isEmpty())
         assertTrue(nn.neuronIDs.isEmpty())
-        repeat(env.activities.size){builder.addNeuron()}
+        repeat(env.activities.size) { builder.addNeuron() }
         assertEquals(nn.inputNeuronIDs.size, env.activities.size)
         assertEquals(nn.neuronIDs.size, env.activities.size)
         val newIDs = nn.neuronIDs.toSet()
         assertNotEquals(oldIDs, newIDs)
-        assertEquals(oldPositions, newIDs.map{builder.getPosition(it)}.toSet())
+        assertEquals(oldPositions, newIDs.map { builder.getPosition(it) }.toSet())
     }
 
     @Test

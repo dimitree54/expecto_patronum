@@ -7,7 +7,7 @@ import we.rashchenko.base.Feedback
 import we.rashchenko.neurons.zoo.RandomNeuron
 import java.lang.Thread.sleep
 
-class SlowNeuron(activationProbability: Float = 0.5f): RandomNeuron(activationProbability){
+class SlowNeuron(activationProbability: Float = 0.5f) : RandomNeuron(activationProbability) {
     override fun touch(sourceId: Int, timeStep: Long) {
         sleep(1)
         super.touch(sourceId, timeStep)
@@ -58,14 +58,17 @@ internal class ControlledNeuronTest {
         assertEquals(controlledNeuron.averageTouchTime, 0.0)
         assertEquals(controlledNeuron.averageForgetTime, 0.0)
 
-        repeat(1000){
+        repeat(1000) {
             controlledNeuron.touch(it, it.toLong())
             controlledNeuron.update(Feedback.NEUTRAL, it.toLong())
             controlledNeuron.getFeedback(it)
             controlledNeuron.forgetSource(it)
             controlledNeuron.active
         }
-        assertEquals(controlledNeuron.numControlledGetActive, 2000)  // note that ControlledNeuron.update also uses getActive
+        assertEquals(
+            controlledNeuron.numControlledGetActive,
+            2000
+        )  // note that ControlledNeuron.update also uses getActive
         assertEquals(controlledNeuron.numControlledForget, 1000)
         assertEquals(controlledNeuron.numControlledUpdate, 1000)
         assertEquals(controlledNeuron.numControlledTouch, 1000)

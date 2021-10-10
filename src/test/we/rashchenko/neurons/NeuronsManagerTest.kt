@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import we.rashchenko.base.Feedback
-import we.rashchenko.neurons.zoo.*
+import we.rashchenko.neurons.zoo.RandomNeuronSampler
 
 internal class NeuronsManagerTest {
 
