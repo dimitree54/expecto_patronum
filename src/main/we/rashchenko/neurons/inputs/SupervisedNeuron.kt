@@ -1,7 +1,7 @@
 package we.rashchenko.neurons.inputs
 
-import we.rashchenko.base.Activity
 import we.rashchenko.base.Feedback
+import we.rashchenko.base.HiddenActivity
 import we.rashchenko.networks.NeuralNetwork
 import we.rashchenko.neurons.Neuron
 
@@ -14,14 +14,20 @@ import we.rashchenko.neurons.Neuron
  *  but does not allow external activity to initially appear at [NeuralNetwork].
  */
 class SupervisedNeuron(
-    private val externalActivity: Activity, private val baseNeuron: Neuron
+    private val externalActivity: HiddenActivity, private val baseNeuron: Neuron
 ) : InputNeuron {
     override fun update(feedback: Feedback, timeStep: Long) = baseNeuron.update(
-        getInternalFeedback(), timeStep
+        if (externalActivity.hidden) feedback else getInternalFeedback(), timeStep
     )
 
-    override fun getInternalFeedback(): Feedback =
-        if (externalActivity.active == baseNeuron.active) Feedback.VERY_POSITIVE else Feedback.VERY_NEGATIVE
+    override fun getInternalFeedback(): Feedback{
+        return if (externalActivity.hidden) {
+            Feedback.NEUTRAL
+        }
+        else{
+            if (externalActivity.active == baseNeuron.active) Feedback.VERY_POSITIVE else Feedback.VERY_NEGATIVE
+        }
+    }
 
     override fun touch(sourceId: Int, timeStep: Long) = baseNeuron.touch(sourceId, timeStep)
     override fun forgetSource(sourceId: Int) = baseNeuron.forgetSource(sourceId)

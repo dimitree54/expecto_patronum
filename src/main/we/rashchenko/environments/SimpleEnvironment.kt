@@ -10,6 +10,19 @@ import java.util.*
  * These two nodes always either both active or not active (they are synchronised).
  */
 class SimpleEnvironment(private val tickPeriod: Int) : InputOutputEnvironment {
+    var validationMode: Boolean = false
+        set(value) {
+            field = value
+            if (value) {
+                outputActivities.forEach {
+                    it.hidden = true
+                }
+            } else {
+                outputActivities.forEach {
+                    it.hidden = false
+                }
+            }
+        }
     private val size = 1
     override val inputActivities = List(size) { ExternallyControlledActivity() }
     override val outputActivities = List(size) { ExternallyControlledHiddenActivity() }

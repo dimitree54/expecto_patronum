@@ -64,14 +64,15 @@ class NeuralNetworkIn2DBuilder(
 
     private val environmentIDsWithNeuronIDs = mutableMapOf<Int, List<Int>>()
     private val neuronIDsConnectedToActivity = mutableMapOf<Int, Activity>()
-    private fun addActivitiesWithoutConnection(
-        activities: Collection<Activity>, inputNeuronBuilder: (Activity, Neuron) -> InputNeuron
+
+    private fun <ActivityType: Activity>addActivitiesWithoutConnection(
+        activities: Collection<ActivityType>, createNeuronFn: (ActivityType, Neuron) -> InputNeuron
     ): List<Int> {
         val neuronIDs = mutableListOf<Int>()
         activities.associateWith { positionSampler.next() }
             .forEach { (activity, position) ->
                 val builderID = randomIds.next()
-                val neuron = inputNeuronBuilder(activity, sample(builderID))
+                val neuron = createNeuronFn(activity, sample(builderID))
                 val nnID = neuralNetwork.addInputNeuron(neuron)
                 addNeuronWithoutConnection(nnID, builderID, position)
 
