@@ -15,6 +15,7 @@ import we.rashchenko.neurons.Neuron
 interface InputNeuron : Neuron {
     val externalActivity: Activity
     val baseNeuron: Neuron
+
     /**
      * Estimate its own feedback.
      */
