@@ -35,6 +35,20 @@ internal class NeuralNetworkIn2DBuilderTest {
     }
 
     @Test
+    fun testInputOutputEnvironment() {
+        val nn = StochasticNeuralNetwork()
+        val sampler = RandomNeuronSampler()
+        val env = SimpleEnvironment(5)
+        val builder = NeuralNetworkIn2DBuilder(nn, sampler)
+        val id = builder.addInputOutputEnvironment(env)
+        assertEquals(nn.inputNeuronIDs.size, env.activities.size)
+        assertEquals(nn.neuronIDs.size, env.activities.size)
+        builder.removeEnvironment(id)
+        assertTrue(nn.inputNeuronIDs.isEmpty())
+        assertTrue(nn.neuronIDs.isEmpty())
+    }
+
+    @Test
     fun getPosition() {
         val nn = StochasticNeuralNetwork()
         val sampler = RandomNeuronSampler()
