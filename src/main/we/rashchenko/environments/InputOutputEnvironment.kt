@@ -1,6 +1,7 @@
 package we.rashchenko.environments
 
 import we.rashchenko.base.Activity
+import we.rashchenko.base.HiddenActivity
 
 /**
  * Special kind of environment where all activities split into two groups: inputs and outputs.
@@ -11,5 +12,5 @@ interface InputOutputEnvironment: Environment {
     override val activities: Collection<Activity>
         get() = listOf(inputActivities, outputActivities).flatten()
     val inputActivities: Collection<Activity>
-    val outputActivities: Collection<Activity>
+    val outputActivities: Collection<HiddenActivity>
 }

@@ -6,7 +6,9 @@ import we.rashchenko.environments.InputOutputEnvironment
 import we.rashchenko.networks.NeuralNetworkWithInput
 import we.rashchenko.neurons.Neuron
 import we.rashchenko.neurons.NeuronsSampler
+import we.rashchenko.neurons.inputs.InputNeuron
 import we.rashchenko.neurons.inputs.MirroringNeuron
+import we.rashchenko.neurons.inputs.SupervisedNeuron
 import we.rashchenko.utils.KNearestVectorsConnectionSampler
 import we.rashchenko.utils.RandomPositionSampler
 import we.rashchenko.utils.Vector2
@@ -62,12 +64,13 @@ class NeuralNetworkIn2DBuilder(
 
 	private val environmentIDsWithNeuronIDs = mutableMapOf<Int, List<Int>>()
 	private val neuronIDsConnectedToActivity = mutableMapOf<Int, Activity>()
-	private fun addEnvironmentWithoutConnection(environment: ObservableActivities): List<Int> {
+	private fun addActivitiesWithoutConnection(
+		activities: Collection<Activity>, inputNeuronBuilder: (Activity, Neuron)->InputNeuron): List<Int> {
 		val neuronIDs = mutableListOf<Int>()
-		environment.activities.associateWith { positionSampler.next() }
+		activities.associateWith { positionSampler.next() }
 			.forEach { (activity, position) ->
 				val builderID = randomIds.next()
-				val neuron = MirroringNeuron(activity, sample(builderID))
+				val neuron = inputNeuronBuilder(activity, sample(builderID))
 				val nnID = neuralNetwork.addInputNeuron(neuron)
 				addNeuronWithoutConnection(nnID, builderID, position)
 
@@ -77,14 +80,28 @@ class NeuralNetworkIn2DBuilder(
 		return neuronIDs
 	}
 
-	override fun addEnvironment(environment: InputOutputEnvironment): Int {
-		val inputNeurons = addEnvironmentWithoutConnection(environment)
+	override fun addEnvironment(environment: ObservableActivities): Int {
+		val inputNeurons = addActivitiesWithoutConnection(environment.activities, ::MirroringNeuron)
 		inputNeurons.forEach { neuronID ->
 			connect(nnIDsWithPosition[neuronID]!!)
 		}
 		val environmentID = randomIds.next()
 		environmentIDsWithNeuronIDs[environmentID] = inputNeurons
 		return environmentID
+	}
+
+	override fun addInputOutputEnvironment(environment: InputOutputEnvironment): Int {
+        val inputNeurons = addActivitiesWithoutConnection(environment.inputActivities, ::MirroringNeuron)
+        inputNeurons.forEach { neuronID ->
+            connect(nnIDsWithPosition[neuronID]!!)
+        }
+        val outputNeurons = addActivitiesWithoutConnection(environment.outputActivities, ::SupervisedNeuron)
+        outputNeurons.forEach { neuronID ->
+            connect(nnIDsWithPosition[neuronID]!!)
+        }
+        val environmentID = randomIds.next()
+        environmentIDsWithNeuronIDs[environmentID] = inputNeurons + outputNeurons
+        return environmentID
 	}
 
 	override fun removeEnvironment(environmentID: Int): Boolean {

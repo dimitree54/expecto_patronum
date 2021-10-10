@@ -1,6 +1,7 @@
 package we.rashchenko.environments
 
 import we.rashchenko.base.ExternallyControlledActivity
+import we.rashchenko.base.ExternallyControlledHiddenActivity
 import java.util.*
 
 /**
@@ -11,7 +12,7 @@ import java.util.*
 class SimpleEnvironment(private val tickPeriod: Int) : InputOutputEnvironment {
 	private val size = 1
 	override val inputActivities = List(size) { ExternallyControlledActivity() }
-	override val outputActivities = List(size) { ExternallyControlledActivity() }
+	override val outputActivities = List(size) { ExternallyControlledHiddenActivity() }
 	override var timeStep: Long = 0
 		private set
 
