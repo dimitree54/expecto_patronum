@@ -2,6 +2,7 @@ package we.rashchenko.networks.builders
 
 import we.rashchenko.base.Activity
 import we.rashchenko.base.ObservableActivities
+import we.rashchenko.environments.InputOutputEnvironment
 import we.rashchenko.networks.NeuralNetworkWithInput
 import we.rashchenko.neurons.Neuron
 import we.rashchenko.neurons.NeuronsSampler
@@ -46,7 +47,6 @@ class NeuralNetworkIn2DBuilder(
 				neuronIDsConnectedToActivity[neuronID] = activity
 			}
 		}
-
 	}
 
 	private fun addNeuronWithoutConnection(neuronID: Int, builderID: Int, position: Vector2) {
@@ -77,7 +77,7 @@ class NeuralNetworkIn2DBuilder(
 		return neuronIDs
 	}
 
-	override fun addEnvironment(environment: ObservableActivities): Int {
+	override fun addEnvironment(environment: InputOutputEnvironment): Int {
 		val inputNeurons = addEnvironmentWithoutConnection(environment)
 		inputNeurons.forEach { neuronID ->
 			connect(nnIDsWithPosition[neuronID]!!)
