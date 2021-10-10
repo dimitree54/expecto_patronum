@@ -29,9 +29,11 @@ internal class NeuralNetworkIn2DBuilderTest {
         val id = builder.addEnvironment(env)
         assertEquals(nn.inputNeuronIDs.size, env.activities.size)
         assertEquals(nn.neuronIDs.size, env.activities.size)
+        assertTrue(builder.getEnvironmentOutputNeuronIDs(id)!!.isEmpty())
         builder.removeEnvironment(id)
         assertTrue(nn.inputNeuronIDs.isEmpty())
         assertTrue(nn.neuronIDs.isEmpty())
+        assertEquals(builder.getEnvironmentOutputNeuronIDs(id), null)
     }
 
     @Test
@@ -43,9 +45,11 @@ internal class NeuralNetworkIn2DBuilderTest {
         val id = builder.addInputOutputEnvironment(env)
         assertEquals(nn.inputNeuronIDs.size, env.activities.size)
         assertEquals(nn.neuronIDs.size, env.activities.size)
+        assertEquals(builder.getEnvironmentOutputNeuronIDs(id)!!.size, 1)
         builder.removeEnvironment(id)
         assertTrue(nn.inputNeuronIDs.isEmpty())
         assertTrue(nn.neuronIDs.isEmpty())
+        assertEquals(builder.getEnvironmentOutputNeuronIDs(id), null)
     }
 
     @Test

@@ -34,6 +34,14 @@ interface NeuralNetworkWithInputBuilder : NeuralNetworkBuilder {
     fun addInputOutputEnvironment(environment: InputOutputEnvironment): Int
 
     /**
+     * Get [InputNeuron] IDs connected to [InputOutputEnvironment.outputActivities] of the environment
+     *  with the specified [environmentID].
+     * @return list of requested neurons or null if there is no [Environment] with [environmentID].
+     *  Note, if [Environment] under [environmentID] is not [InputOutputEnvironment], then empty list should be returned
+     * */
+    fun getEnvironmentOutputNeuronIDs(environmentID: Int): List<Int>?
+
+    /**
      * Remove connection of the [Environment] under [environmentID] by removing all its [InputNeuron]s.
      * @return true if environment was successfully remove, false if there is not such [environmentID]
      */

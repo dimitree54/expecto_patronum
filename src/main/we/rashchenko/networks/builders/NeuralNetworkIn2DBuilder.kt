@@ -63,6 +63,7 @@ class NeuralNetworkIn2DBuilder(
         }
 
     private val environmentIDsWithNeuronIDs = mutableMapOf<Int, List<Int>>()
+    private val environmentIDsWithOutputNeuronIDs = mutableMapOf<Int, List<Int>>()
     private val neuronIDsConnectedToActivity = mutableMapOf<Int, Activity>()
 
     private fun <ActivityType: Activity>addActivitiesWithoutConnection(
@@ -89,6 +90,7 @@ class NeuralNetworkIn2DBuilder(
         }
         val environmentID = randomIds.next()
         environmentIDsWithNeuronIDs[environmentID] = inputNeurons
+        environmentIDsWithOutputNeuronIDs[environmentID] = emptyList()
         return environmentID
     }
 
@@ -103,8 +105,12 @@ class NeuralNetworkIn2DBuilder(
         }
         val environmentID = randomIds.next()
         environmentIDsWithNeuronIDs[environmentID] = inputNeurons + outputNeurons
+        environmentIDsWithOutputNeuronIDs[environmentID] = outputNeurons
         return environmentID
     }
+
+    override fun getEnvironmentOutputNeuronIDs(environmentID: Int): List<Int>? =
+        environmentIDsWithOutputNeuronIDs[environmentID]
 
     override fun removeEnvironment(environmentID: Int): Boolean {
         environmentIDsWithNeuronIDs[environmentID]?.forEach {
@@ -112,6 +118,7 @@ class NeuralNetworkIn2DBuilder(
             neuronIDsConnectedToActivity.remove(it)
         } ?: return false
         environmentIDsWithNeuronIDs.remove(environmentID)
+        environmentIDsWithOutputNeuronIDs.remove(environmentID)
         return true
     }
 
