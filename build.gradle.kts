@@ -1,6 +1,6 @@
 plugins {
 	id("maven-publish")
-	kotlin("jvm") version "1.5.31"
+	kotlin("jvm") version "1.6.0"
 	id("org.jetbrains.dokka") version "1.5.0"
 }
 
@@ -8,12 +8,14 @@ repositories {
 	mavenCentral()
 }
 
+@Suppress("GradlePackageUpdate")
 dependencies {
 	implementation(kotlin("stdlib"))
-
-	implementation("org.apache.commons:commons-math3:3.6.1")
-
 	testImplementation(kotlin("test-junit5"))
+}
+
+dependencies{
+	implementation("org.apache.commons:commons-math3:3.6.1")
 }
 
 // we need to specify following sourceSets because we store main and test not in default
