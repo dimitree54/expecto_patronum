@@ -47,6 +47,7 @@ export GITHUB_TOKEN=ghp_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 # To add them permanently you need to add them to `~/.profile` file
 ```
 You may want to generate special GitHub token with limited permissions instead of using your real GitHub password.
+
 2. Add the library itself as dependency specifying its full name:
 ```kotlin
 dependencies {
