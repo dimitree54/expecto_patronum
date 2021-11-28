@@ -13,7 +13,7 @@ open class AlwaysSorted<T>(val comparator: Comparator<T>) : MutableList<T> {
     override fun isEmpty(): Boolean = data.isEmpty()
     override fun iterator(): MutableIterator<T> = data.iterator()
     override fun clear() = data.clear()
-    override fun retainAll(elements: Collection<T>): Boolean = data.retainAll(elements)
+    override fun retainAll(elements: Collection<T>): Boolean = data.retainAll(elements.toSet())
     override fun addAll(index: Int, elements: Collection<T>): Boolean = addAll(elements)
     override fun listIterator(): MutableListIterator<T> = data.listIterator()
     override fun listIterator(index: Int): MutableListIterator<T> = data.listIterator(index)
