@@ -12,6 +12,7 @@ import java.util.*
  */
 class NeuronsManager : NeuronsSampler {
     override val name: String = "manager"
+    override val author: String = "dimitree54"
     private val neuronSamplerMap = mutableMapOf<Int, NeuronsSampler>()
     private val samplersScore = mutableMapOf<NeuronsSampler, ExponentialMovingAverage>()
     private val probabilityRanges = mutableMapOf<NeuronsSampler, ClosedFloatingPointRange<Double>>()

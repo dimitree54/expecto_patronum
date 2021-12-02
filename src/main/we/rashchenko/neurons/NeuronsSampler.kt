@@ -25,6 +25,13 @@ interface NeuronsSampler {
     val name: String
 
     /**
+     * Author name (GitHub username).
+     * That name has to match the name of the user who committed that sampler.
+     * Check naming conventions at [ChNN competition rules](https://dimitree54.github.io/rules/).
+     */
+    val author: String
+
+    /**
      * Sample the next [Neuron].
      * @param id Under that id [reportFeedback] and [reportDeath] will report about how good the sampled [Neuron] is.
      * @return sampled neuron. Note that storing reference to the returned [Neuron]

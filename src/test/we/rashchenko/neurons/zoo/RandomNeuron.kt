@@ -54,6 +54,7 @@ open class RandomNeuron(val activationProbability: Float) : Neuron {
  */
 class RandomNeuronSampler(private val amplitude: Float = 0.2f) : NeuronsSampler {
     override val name: String = "RandomNeuronSampler$amplitude"
+    override val author: String = "dimitree54"
 
     private val random = Random()
     private val neurons = mutableMapOf<Int, RandomNeuron>()

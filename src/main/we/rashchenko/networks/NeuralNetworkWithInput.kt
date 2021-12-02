@@ -9,7 +9,7 @@ import we.rashchenko.utils.MetricsCalculator
  * [NeuralNetworkWithInput] should check [InputNeuron]s state on each [tick] to not miss any [InputNeuron]
  *  state change initiated from outside the [NeuralNetwork].
  *
- * To understand what privileges [InputNeuron] has check its documentation.
+ * To understand what privileges [InputNeuron] has, check its documentation.
  */
 interface NeuralNetworkWithInput : NeuralNetwork {
     /**
