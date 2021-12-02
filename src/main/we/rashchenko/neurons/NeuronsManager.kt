@@ -64,15 +64,13 @@ class NeuronsManager : NeuronsSampler {
         neuronSamplerMap.remove(id)
     }
 
-    fun getSummary(): String {
-        val summary = StringBuilder("Neurons manager summary:")
-        samplersScore.forEach { (sampler, score) ->
-            val probability = probabilityRanges[sampler]!!.let { it.endInclusive - it.start }
-            summary.append(
-                "\n\t${sampler.name} has score ${"%.${2}f".format(score.value)} " +
-                        "and have ${"%.${2}f".format(probability)} probability to be chosen next time"
+    fun getSamplerStats(): Map<NeuronsSampler, SamplerStats> =
+        samplersScore.mapValues { (sampler, scoreEMA) ->
+            SamplerStats(
+                scoreEMA.value,
+                probabilityRanges[sampler]!!.let { it.endInclusive - it.start },
+                neuronSamplerMap.count { it.value == sampler }
             )
         }
-        return summary.toString()
-    }
 }
+
