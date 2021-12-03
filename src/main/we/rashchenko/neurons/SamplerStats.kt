@@ -16,18 +16,3 @@ fun getSummary(stats: Map<NeuronsSampler, SamplerStats>): String{
     }
     return summary.toString()
 }
-
-fun getResultsMarkdownTable(stats: Map<NeuronsSampler, SamplerStats>): String{
-    val totalPopulation = max(1, stats.values.sumOf { it.population }).toDouble()
-    val summary = StringBuilder(
-        "# Results" +
-                "\n| Rating position | Sampler name | Author | Score | Population rate |" +
-                "\n| --------------- | ------------ | -------| ----- | --------------- |"
-    )
-    stats.toList().sortedByDescending { it.second.score }.forEachIndexed{ place, (sampler, stats) ->
-        summary.append("\n| ${place + 1} | ${sampler.name} | ${sampler.author} |  " +
-                "${"%.${2}f".format(stats.score)} | ${"%.${2}f".format(stats.population / totalPopulation)} |"
-        )
-    }
-    return summary.toString()
-}

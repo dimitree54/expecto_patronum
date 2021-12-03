@@ -96,7 +96,6 @@ internal class NeuronsManagerTest {
             add(RandomNeuronSampler(1.0f))
         }
         println(getSummary(neuronsManager.getSamplerStats()))
-        println(getResultsMarkdownTable(neuronsManager.getSamplerStats()))
         repeat(1000) {
             val neuron = neuronsManager.next(it)
             neuron.touch(0, 0)
@@ -108,6 +107,5 @@ internal class NeuronsManagerTest {
             neuron.update(Feedback.NEUTRAL, 0)
         }
         println(getSummary(neuronsManager.getSamplerStats()))
-        println(getResultsMarkdownTable(neuronsManager.getSamplerStats()))
     }
 }
