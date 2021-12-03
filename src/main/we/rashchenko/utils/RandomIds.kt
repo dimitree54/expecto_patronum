@@ -1,19 +1,11 @@
 package we.rashchenko.utils
 
-import java.util.*
-
 /**
- * Infinite sequence of random integers without repetition. In order to avoid repetitions it stores all
- *  previously sampled ids, so that sampler can become bigger and slower with time, be careful.
+ * Sequence of integers without repetition. For now, it is consecutive.
  */
-val randomIds = sequence {
-    val existingIds = mutableSetOf<Int>()
-    val random = Random()
-    while (true) {
-        val randomId = random.nextInt()
-        if (randomId !in existingIds) {
-            existingIds.add(randomId)
-            yield(randomId)
-        }
+class IDsGenerator{
+    private var lastID = 0
+    fun next(): Int{
+        return lastID++
     }
-}.iterator()
+}

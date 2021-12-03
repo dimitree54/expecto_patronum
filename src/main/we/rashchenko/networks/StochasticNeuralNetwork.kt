@@ -4,7 +4,7 @@ import we.rashchenko.base.Feedback
 import we.rashchenko.neurons.Neuron
 import we.rashchenko.neurons.inputs.InputNeuron
 import we.rashchenko.utils.ExponentialMovingAverage
-import we.rashchenko.utils.randomIds
+import we.rashchenko.utils.IDsGenerator
 
 /**
  * Main implementation of the [NeuralNetworkWithInput].
@@ -24,9 +24,10 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
     private val backwardConnections = mutableMapOf<Int, MutableList<Int>>()
 
     private val neuronFeedbacks = mutableMapOf<Int, ExponentialMovingAverage>()
+    private val ids = IDsGenerator()
 
     override fun add(neuron: Neuron): Int {
-        val id = randomIds.next()
+        val id = ids.next()
         neuronsWithID[id] = neuron
         connections[id] = mutableListOf()
         backwardConnections[id] = mutableListOf()

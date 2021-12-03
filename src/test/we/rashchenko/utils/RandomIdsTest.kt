@@ -9,8 +9,9 @@ internal class RandomIdsTest {
     fun testForSetProperties() {
         val dataSize = 1000000
         val data = mutableSetOf<Int>()
+        val ids = IDsGenerator()
         repeat(dataSize) {
-            data.add(randomIds.next())
+            data.add(ids.next())
         }
         assertEquals(data.size, dataSize)
     }

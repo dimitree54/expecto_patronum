@@ -9,10 +9,7 @@ import we.rashchenko.neurons.NeuronsSampler
 import we.rashchenko.neurons.inputs.InputNeuron
 import we.rashchenko.neurons.inputs.MirroringNeuron
 import we.rashchenko.neurons.inputs.SupervisedNeuron
-import we.rashchenko.utils.KNearestVectorsConnectionSampler
-import we.rashchenko.utils.RandomPositionSampler
-import we.rashchenko.utils.Vector2
-import we.rashchenko.utils.randomIds
+import we.rashchenko.utils.*
 
 
 /**
@@ -36,7 +33,7 @@ class NeuralNetworkIn2DBuilder(
 
     private val unattachedActivitiesWithPosition = mutableListOf<Pair<Activity, Vector2>>()
     private fun addNeuronWithoutConnection(): Int {
-        val builderID = randomIds.next()
+        val builderID = ids.next()
         val neuron: Neuron = sample(builderID)
         return if (unattachedActivitiesWithPosition.isEmpty()) {
             neuralNetwork.add(neuron).also { neuronID ->
@@ -65,6 +62,7 @@ class NeuralNetworkIn2DBuilder(
     private val environmentIDsWithNeuronIDs = mutableMapOf<Int, List<Int>>()
     private val environmentIDsWithOutputNeuronIDs = mutableMapOf<Int, List<Int>>()
     private val neuronIDsConnectedToActivity = mutableMapOf<Int, Activity>()
+    private val ids = IDsGenerator()
 
     private fun <ActivityType : Activity> addActivitiesWithoutConnection(
         activities: Collection<ActivityType>, createNeuronFn: (ActivityType, Neuron) -> InputNeuron
@@ -72,7 +70,7 @@ class NeuralNetworkIn2DBuilder(
         val neuronIDs = mutableListOf<Int>()
         activities.associateWith { positionSampler.next() }
             .forEach { (activity, position) ->
-                val builderID = randomIds.next()
+                val builderID = ids.next()
                 val neuron = createNeuronFn(activity, sample(builderID))
                 val nnID = neuralNetwork.addInputNeuron(neuron)
                 addNeuronWithoutConnection(nnID, builderID, position)
@@ -88,7 +86,7 @@ class NeuralNetworkIn2DBuilder(
         inputNeurons.forEach { neuronID ->
             connect(nnIDsWithPosition[neuronID]!!)
         }
-        val environmentID = randomIds.next()
+        val environmentID = ids.next()
         environmentIDsWithNeuronIDs[environmentID] = inputNeurons
         environmentIDsWithOutputNeuronIDs[environmentID] = emptyList()
         return environmentID
@@ -103,7 +101,7 @@ class NeuralNetworkIn2DBuilder(
         outputNeurons.forEach { neuronID ->
             connect(nnIDsWithPosition[neuronID]!!)
         }
-        val environmentID = randomIds.next()
+        val environmentID = ids.next()
         environmentIDsWithNeuronIDs[environmentID] = inputNeurons + outputNeurons
         environmentIDsWithOutputNeuronIDs[environmentID] = outputNeurons
         return environmentID
