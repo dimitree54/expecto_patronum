@@ -1,6 +1,6 @@
 [![CI](https://github.com/dimitree54/ChNN-Library/actions/workflows/build_test_workflow.yml/badge.svg)](https://github.com/dimitree54/ChNN-Library/actions/workflows/build_test_workflow.yml)
 
-# ChNN-Library
+# ChNN-Library (Chaotic neural network library)
 
 A library for creation and evaluation chaotic (non-layered) neural networks. 
 Also, that library provides quality estimation and evolution algorithms for such networks
