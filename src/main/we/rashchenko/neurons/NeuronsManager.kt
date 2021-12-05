@@ -29,7 +29,7 @@ class NeuronsManager : NeuronsSampler {
 
     private fun updateRanges() {
         val keys = samplersScore.keys
-        val probabilities = softmax(samplersScore.values.map { it.value })  // @todo tune softmax coefficient
+        val probabilities = softmax(samplersScore.values.map { it.value })
 
         probabilityRanges.clear()
         var lastMax = 0.0
