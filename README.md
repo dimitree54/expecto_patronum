@@ -75,11 +75,11 @@ You may check available version (and the number of the last version) on GitHub h
 
 ## Documentation
 
-To understand classes structure you can check [documentation](https://dimitree54.github.io/ChNN-Library/).
+To understand classes structure you can check [documentation](https://dimitree54.github.io/ChNN-Library/) or [ChNN architecture page](https://dimitree54.github.io/ChNN/architecture/).
 
 ## Participate in contest
 
-Visit [[ChNN-Neurons]](https://github.com/dimitree54/ChNN-Neurons) for more info.
+Visit [contest page](https://dimitree54.github.io/ChNN/contest/) for more info.
 
 ## Contribute
 
