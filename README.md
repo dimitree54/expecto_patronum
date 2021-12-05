@@ -105,6 +105,8 @@ We are looking for advices in
 For now it is not supported to help with money. But if you are interested in it, create an issue to add donation channels.
 If that option popular, we will add it.
 
+Extra info can be found on [contribution page](https://dimitree54.github.io/ChNN/contribution/)
+
 ## Author
 
 If you have questions or suggestion not covered by the README, you can reach me (Dmitrii Rashchenko) via email (dimitree54@gmail.com)
