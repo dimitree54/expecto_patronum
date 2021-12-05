@@ -10,7 +10,7 @@ fun getSummary(stats: Map<NeuronsSampler, SamplerStats>): String{
     stats.forEach { (sampler, stats) ->
         summary.append(
             "\n\t${sampler.name} of ${sampler.author} has score ${"%.${2}f".format(stats.score)}, " +
-                    "takes ${stats.population / totalPopulation} of a total population " +
+                    "takes ${"%.${2}f".format(stats.population / totalPopulation)} of a total population " +
                     "and have ${"%.${2}f".format(stats.chooseProbability)} probability to be chosen next time"
         )
     }
