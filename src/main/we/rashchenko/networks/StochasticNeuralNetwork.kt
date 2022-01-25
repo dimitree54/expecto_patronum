@@ -5,7 +5,6 @@ import we.rashchenko.neurons.Neuron
 import we.rashchenko.neurons.inputs.InputNeuron
 import we.rashchenko.utils.ExponentialMovingAverage
 import we.rashchenko.utils.IDsGenerator
-import java.lang.Exception
 
 /**
  * Main implementation of the [NeuralNetworkWithInput].
@@ -67,7 +66,7 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
         if (fromNeuronID !in neuronIDs || toNeuronID !in neuronIDs) {
             return false
         }
-        if (connections[fromNeuronID]!!.contains(toNeuronID)){
+        if (connections[fromNeuronID]!!.contains(toNeuronID)) {
             throw Exception("Adding the same connection again. Check whether your builder correct.")
         }
         connections[fromNeuronID]!!.add(toNeuronID)
@@ -88,7 +87,6 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
     }
 
     private var nextTickNeurons = mutableSetOf<Int>()
-    private val setAddingLock = Object()
     override fun tick() {
         val currentTickNeurons = nextTickNeurons
         nextTickNeurons = mutableSetOf()
@@ -102,9 +100,7 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
             neuronsWithID[id]!!.also { neuron ->
                 neuron.update(getFeedback(id)!!, timeStep)
                 if (neuron.active) {
-                    synchronized(setAddingLock) {
-                        nextTickNeurons.add(id)
-                    }
+                    nextTickNeurons.add(id)
                 }
             }
         }
@@ -126,18 +122,12 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
     override fun getInputNeuron(neuronID: Int): InputNeuron? = inputNeuronsWithID[neuronID]
 
     private fun touch(sourceID: Int, receiverID: Int) {
-        val receiver = neuronsWithID[receiverID]!!
-        synchronized(receiver) {
-            val isReceiverInput = receiverID in inputNeuronIDs
-            if (receiverID !in nextTickNeurons || isReceiverInput) {
-                receiver.touch(sourceID, timeStep)
-                if (receiver.active || isReceiverInput) {
-                    val feedbackUpdate = receiver.getFeedback(sourceID)
-                    synchronized(setAddingLock) {
-                        neuronFeedbacks[sourceID]!!.update(feedbackUpdate.value)
-                        nextTickNeurons.add(receiverID)
-                    }
-                }
+        if (receiverID !in nextTickNeurons) {
+            val receiver = neuronsWithID[receiverID]!!
+            receiver.touch(sourceID, timeStep)
+            if (receiver.active) {
+                neuronFeedbacks[sourceID]!!.update(receiver.getFeedback(sourceID).value)
+                nextTickNeurons.add(receiverID)
             }
         }
     }
