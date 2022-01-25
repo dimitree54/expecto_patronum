@@ -16,7 +16,7 @@ More info about ChNN project can be found on the [project page](https://dimitree
 
 For faster search of neurons with such a collaborative properties, 
  anybody can suggest their own implementation of the neuron and try it out in the competition with other solutions.
-More info about ChNN contest can be found on the [contest page](https://github.com/dimitree54/ChNN-Neurons). 
+More info about ChNN contest can be found on the [contest page](https://dimitree54.github.io/ChNN/contest/). 
 
 That repository contains a library for chaotic neural networks creation and evaluation, the core of the ChNN project.
 
@@ -75,11 +75,11 @@ You may check available version (and the number of the last version) on GitHub h
 
 ## Documentation
 
-To understand classes structure you can check [documentation](https://dimitree54.github.io/ChNN-Library/).
+To understand classes structure you can check [documentation](https://dimitree54.github.io/ChNN-Library/) or [ChNN architecture page](https://dimitree54.github.io/ChNN/architecture/).
 
 ## Participate in contest
 
-Visit [[ChNN-Neurons]](https://github.com/dimitree54/ChNN-Neurons) for more info.
+Visit [contest page](https://dimitree54.github.io/ChNN/contest/) for more info.
 
 ## Contribute
 
@@ -104,6 +104,8 @@ We are looking for advices in
 5. Sponsorship: It would be great to make some prise founds for contest or to support contributors of the projects. 
 For now it is not supported to help with money. But if you are interested in it, create an issue to add donation channels.
 If that option popular, we will add it.
+
+Extra info can be found on [contribution page](https://dimitree54.github.io/ChNN/contribution/)
 
 ## Author
 
