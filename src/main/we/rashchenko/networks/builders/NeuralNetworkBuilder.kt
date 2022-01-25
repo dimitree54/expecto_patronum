@@ -16,11 +16,11 @@ interface NeuralNetworkBuilder {
     val neuralNetwork: NeuralNetwork
 
     /**
-     * Sample random [Neuron], add it to the [neuralNetwork] and add
-     * some connections to and from that new [Neuron]
-     * @return id of the new [Neuron]
+     * Sample [n] random [Neuron]s, add them to the [neuralNetwork] and add
+     * some connections between each other and other previously added neurons
+     * @return list ids of the newly added [Neuron]s
      */
-    fun addNeuron(): Int
+    fun addNeurons(n: Int = 1): List<Int>
 
     /**
      * Remove the [Neuron] under [neuronID] from [NeuralNetwork]

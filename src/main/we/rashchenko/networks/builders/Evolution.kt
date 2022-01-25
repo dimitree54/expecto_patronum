@@ -18,7 +18,7 @@ import java.util.*
  * After collecting [Feedback] for all neurons the worst [neuronsForSelection] of them are considered as candidates for removal.
  * Those neurons are notified by the [Neuron.update] function (calling update considered as a warning).
  * If some [Neuron] warned [warningsBeforeKill] times (in total, not only consequently) it is replaced with other random
- *  [Neuron] by calling [NeuralNetworkBuilder.remove] and [NeuralNetworkBuilder.addNeuron] functions of
+ *  [Neuron] by calling [NeuralNetworkBuilder.remove] and [NeuralNetworkBuilder.addNeurons] functions of
  *  the wrapped builder.
  * So, as you can see that class implements only bad neurons killing,
  *  but a sampling of new successful neurons should be managed by the base builder.
@@ -52,7 +52,7 @@ class Evolution(
             warnings[neuronID] = newWarningsValue
             if (newWarningsValue > warningsBeforeKill) {
                 if (remove(neuronID)) {
-                    addNeuron()
+                    addNeurons()
                 } else {
                     // warning for the bad neuron
                     neuralNetwork.getNeuron(neuronID)!!.update(feedback, neuralNetwork.timeStep)

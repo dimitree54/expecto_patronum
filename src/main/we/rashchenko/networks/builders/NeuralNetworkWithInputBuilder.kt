@@ -19,17 +19,10 @@ interface NeuralNetworkWithInputBuilder : NeuralNetworkBuilder {
     override val neuralNetwork: NeuralNetworkWithInput
 
     /**
-     * Connect [ObservableActivities] (for example [Environment]) to the [NeuralNetwork].
-     * Connecting means wrapping all [ObservableActivities] with [InputNeuron] and adding them to the network.
-     * @return unique id for that environment. That id can be later used to [removeEnvironment]
-     */
-    fun addEnvironment(environment: ObservableActivities): Int
-
-    /**
      * Connect [InputOutputEnvironment] (for example [SimpleEnvironment]) to the [NeuralNetwork].
      * Connecting means wrapping all input and output activities with [InputNeuron] and adding them to the network.
      * Kind of [InputNeuron] may be different for input and output neurons.
-     * @return unique id for that environment. That id can be later used to [removeEnvironment]
+     * @return unique id for that environment.
      */
     fun addInputOutputEnvironment(environment: InputOutputEnvironment): Int
 
@@ -40,10 +33,4 @@ interface NeuralNetworkWithInputBuilder : NeuralNetworkBuilder {
      *  Note, if [Environment] under [environmentID] is not [InputOutputEnvironment], then empty list should be returned
      * */
     fun getEnvironmentOutputNeuronIDs(environmentID: Int): List<Int>?
-
-    /**
-     * Remove connection of the [Environment] under [environmentID] by removing all its [InputNeuron]s.
-     * @return true if environment was successfully remove, false if there is not such [environmentID]
-     */
-    fun removeEnvironment(environmentID: Int): Boolean
 }

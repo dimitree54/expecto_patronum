@@ -5,6 +5,7 @@ import we.rashchenko.neurons.Neuron
 import we.rashchenko.neurons.inputs.InputNeuron
 import we.rashchenko.utils.ExponentialMovingAverage
 import we.rashchenko.utils.IDsGenerator
+import java.lang.Exception
 
 /**
  * Main implementation of the [NeuralNetworkWithInput].
@@ -65,6 +66,9 @@ class StochasticNeuralNetwork : NeuralNetworkWithInput {
     override fun addConnection(fromNeuronID: Int, toNeuronID: Int): Boolean {
         if (fromNeuronID !in neuronIDs || toNeuronID !in neuronIDs) {
             return false
+        }
+        if (connections[fromNeuronID]!!.contains(toNeuronID)){
+            throw Exception("Adding the same connection again. Check whether your builder correct.")
         }
         connections[fromNeuronID]!!.add(toNeuronID)
         backwardConnections[toNeuronID]!!.add(fromNeuronID)

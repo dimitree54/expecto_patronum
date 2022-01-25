@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import we.rashchenko.environments.SimpleEnvironment
 import we.rashchenko.networks.StochasticNeuralNetwork
-import we.rashchenko.networks.builders.NeuralNetworkIn2DBuilder
+import we.rashchenko.networks.builders.NeuralNetworkIn2DBuilderFixed
 import we.rashchenko.neurons.zoo.RandomNeuronSampler
 
 internal class MetricsCalculatorTest {
@@ -15,8 +15,9 @@ internal class MetricsCalculatorTest {
         val nn = StochasticNeuralNetwork()
         val sampler = RandomNeuronSampler()
         val env = SimpleEnvironment(5)
-        val builder = NeuralNetworkIn2DBuilder(nn, sampler)
+        val builder = NeuralNetworkIn2DBuilderFixed(nn, sampler, 5)
         val id = builder.addInputOutputEnvironment(env)
+        builder.addNeurons(env.activities.size)
         val calculator = MetricsCalculator(id, builder)
         assertThrows<IllegalArgumentException> {
             MetricsCalculator(id + 1, builder)

@@ -11,9 +11,9 @@ internal class EvolutionTest {
     fun tick() {
         val nn = StochasticNeuralNetwork()
         val sampler = RandomNeuronSampler()
-        val builder = NeuralNetworkIn2DBuilder(nn, sampler)
+        val builder = NeuralNetworkIn2DBuilderFixed(nn, sampler, 5)
         val evolution = Evolution(builder, 2, 1, 1.0)
-        repeat(3) { evolution.addNeuron() }
+        evolution.addNeurons(3)
         val oldIDs = nn.neuronIDs.toSet()
         evolution.tick()
         assertEquals(oldIDs, nn.neuronIDs.toSet())

@@ -16,6 +16,7 @@ dependencies {
 
 dependencies{
 	implementation("org.apache.commons:commons-math3:3.6.1")
+	implementation("com.google.guava:guava:31.0.1-jre")
 }
 
 // we need to specify following sourceSets because we store main and test not in default
