@@ -125,6 +125,7 @@ class NeuralNetworkIn2DBuilderFixed(
         val position = positionsWithNeuronId.inverse().remove(neuronID) ?: return false
         vacantPositions.add(position)
         neuralNetwork.remove(neuronID)
+        nnIDs2builderIDs.remove(neuronID)
         return true
     }
 
