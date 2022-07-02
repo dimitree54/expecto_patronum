@@ -1,22 +1,15 @@
 plugins {
 	id("maven-publish")
-	kotlin("jvm") version "1.6.0"
-	id("org.jetbrains.dokka") version "1.5.0"
+	kotlin("jvm") version "1.7.0"
 }
 
 repositories {
 	mavenCentral()
 }
 
-@Suppress("GradlePackageUpdate")
 dependencies {
 	implementation(kotlin("stdlib"))
 	testImplementation(kotlin("test-junit5"))
-}
-
-dependencies{
-	implementation("org.apache.commons:commons-math3:3.6.1")
-	implementation("com.google.guava:guava:31.0.1-jre")
 }
 
 // we need to specify following sourceSets because we store main and test not in default
@@ -39,29 +32,14 @@ tasks.test {
 }
 
 publishing {
-	publications {
-		create<MavenPublication>("default") {
-			from(components["java"])
-			// Include any other artifacts here, like javadocs
-		}
-	}
-
 	repositories {
 		maven {
 			name = "GitHubPackages"
-			url = uri("https://maven.pkg.github.com/dimitree54/chnn-library")
+			url = uri("https://maven.pkg.github.com/dimitree54/expecto_patronum_library")
 			credentials {
 				username = System.getenv("GITHUB_ACTOR")
 				password = System.getenv("GITHUB_TOKEN")
 			}
-		}
-	}
-}
-
-tasks.dokkaHtml.configure {
-	dokkaSourceSets {
-		configureEach {
-			includes.from("Module.md")
 		}
 	}
 }

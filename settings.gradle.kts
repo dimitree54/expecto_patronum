@@ -1,1 +1,1 @@
-rootProject.name = "chnn-library"
+rootProject.name = "expecto-patronum-library"
