@@ -3,7 +3,11 @@ package we.rashchenko.database.mongo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import we.rashchenko.*
+import we.rashchenko.patronum.SearchRequest
+import we.rashchenko.patronum.User
+import we.rashchenko.patronum.Wish
+import we.rashchenko.patronum.circle2polygon
+import we.rashchenko.patronum.database.mongo.Database
 import java.util.*
 
 internal class DatabaseTest {

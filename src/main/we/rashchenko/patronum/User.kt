@@ -1,4 +1,4 @@
-package we.rashchenko
+package we.rashchenko.patronum
 
 import org.bson.types.ObjectId
 

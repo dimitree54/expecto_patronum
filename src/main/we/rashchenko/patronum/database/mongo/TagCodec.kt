@@ -1,11 +1,11 @@
-package we.rashchenko.database.mongo
+package we.rashchenko.patronum.database.mongo
 
 import org.bson.BsonReader
 import org.bson.BsonString
 import org.bson.BsonWriter
 import org.bson.Document
 import org.bson.codecs.*
-import we.rashchenko.Tag
+import we.rashchenko.patronum.Tag
 
 class TagCodec : CollectibleCodec<Tag> {
     private val documentCodec: Codec<Document>

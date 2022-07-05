@@ -1,4 +1,4 @@
-package we.rashchenko.database.mongo
+package we.rashchenko.patronum.database.mongo
 
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
@@ -16,9 +16,13 @@ import com.mongodb.client.model.Updates
 import org.bson.codecs.configuration.CodecRegistries
 import org.bson.codecs.configuration.CodecRegistries.fromCodecs
 import org.bson.conversions.Bson
-import we.rashchenko.*
+import we.rashchenko.patronum.SearchRequest
+import we.rashchenko.patronum.Tag
+import we.rashchenko.patronum.User
+import we.rashchenko.patronum.Wish
+import we.rashchenko.patronum.database.Database
 
-class Database : we.rashchenko.database.Database {
+class Database : Database {
     private val mongoClient: MongoClient
     private val database: MongoDatabase
     private val usersCollection: MongoCollection<User>

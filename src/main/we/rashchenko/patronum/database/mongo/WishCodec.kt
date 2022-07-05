@@ -1,4 +1,4 @@
-package we.rashchenko.database.mongo
+package we.rashchenko.patronum.database.mongo
 
 import com.mongodb.MongoClientSettings.getDefaultCodecRegistry
 import org.bson.BsonReader
@@ -7,7 +7,7 @@ import org.bson.BsonWriter
 import org.bson.Document
 import org.bson.codecs.*
 import org.bson.types.ObjectId
-import we.rashchenko.Wish
+import we.rashchenko.patronum.Wish
 
 class WishCodec : CollectibleCodec<Wish> {
     private val documentCodec: Codec<Document>

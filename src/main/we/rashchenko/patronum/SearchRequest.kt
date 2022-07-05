@@ -1,4 +1,4 @@
-package we.rashchenko
+package we.rashchenko.patronum
 
 import com.mongodb.client.model.geojson.Polygon
 import org.bson.types.ObjectId

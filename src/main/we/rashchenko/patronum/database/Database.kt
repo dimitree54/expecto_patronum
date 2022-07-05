@@ -1,9 +1,9 @@
-package we.rashchenko.database
+package we.rashchenko.patronum.database
 
-import we.rashchenko.SearchRequest
-import we.rashchenko.Tag
-import we.rashchenko.User
-import we.rashchenko.Wish
+import we.rashchenko.patronum.User
+import we.rashchenko.patronum.Wish
+import we.rashchenko.patronum.SearchRequest
+import we.rashchenko.patronum.Tag
 
 interface Database {
     fun putUser(user: User)
