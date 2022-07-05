@@ -1,6 +1,9 @@
 package we.rashchenko
 
-class SearchRequest(val id: Int) {
-    var tags: List<Tag>? = null
-    var location: Location? = null
+import com.mongodb.client.model.geojson.Polygon
+import org.bson.types.ObjectId
+
+class SearchRequest(val author: User) {
+    var tagIds: List<ObjectId>? = null
+    var searchArea: Polygon? = null
 }

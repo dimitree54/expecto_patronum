@@ -1,3 +1,5 @@
 package we.rashchenko
 
-class Tag(val id: Int, val name: String)
+import org.bson.types.ObjectId
+
+class Tag(val name: String, val id: ObjectId = ObjectId.get())

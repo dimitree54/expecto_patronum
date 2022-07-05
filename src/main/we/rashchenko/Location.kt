@@ -1,3 +1,3 @@
 package we.rashchenko
 
-class Location(val x: String, y: String)
+class Location(val longitude: Double, val latitude: Double, val radius: Double)

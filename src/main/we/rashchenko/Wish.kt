@@ -1,23 +1,19 @@
 package we.rashchenko
 
+import com.mongodb.client.model.geojson.Polygon
+import org.bson.types.ObjectId
 import java.util.*
 
 class Wish(
-    val id: Int,
-    val author: User
+    val authorId: ObjectId,
+    val id: ObjectId = ObjectId.get()
 ) {
     var title: String? = null
     var description: String? = null
     var image: String? = null
-    var tags: List<Tag>? = null
-    var location: Location? = null
+    val tagIds: MutableList<ObjectId> = mutableListOf()
+    var wishArea: Polygon? = null
     var expirationDate: Date? = null
 
-    val dateCreated: Date = Date()
-    val dateClosed: Date? = null
-
-    var completed: Boolean = false
-    var active: Boolean = false
-    var inProgress: Boolean = false
-    var fulfiller: User? = null
+    var patronId: String? = null
 }
