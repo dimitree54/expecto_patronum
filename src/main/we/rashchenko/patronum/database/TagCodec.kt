@@ -1,4 +1,4 @@
-package we.rashchenko.patronum.database.mongo
+package we.rashchenko.patronum.database
 
 import org.bson.BsonReader
 import org.bson.BsonString

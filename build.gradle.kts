@@ -5,6 +5,7 @@ plugins {
 
 repositories {
 	mavenCentral()
+	maven("https://jitpack.io")
 }
 
 dependencies {
@@ -12,6 +13,7 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testImplementation(kotlin("test-junit5"))
 	implementation("org.mongodb:mongodb-driver-sync:4.6.0")
+	implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.7")
 }
 
 // we need to specify following sourceSets because we store main and test not in default

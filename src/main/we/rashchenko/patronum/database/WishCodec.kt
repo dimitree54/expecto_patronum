@@ -1,4 +1,4 @@
-package we.rashchenko.patronum.database.mongo
+package we.rashchenko.patronum.database
 
 import com.mongodb.MongoClientSettings.getDefaultCodecRegistry
 import org.bson.BsonReader

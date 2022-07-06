@@ -7,7 +7,7 @@ import we.rashchenko.patronum.SearchRequest
 import we.rashchenko.patronum.User
 import we.rashchenko.patronum.Wish
 import we.rashchenko.patronum.circle2polygon
-import we.rashchenko.patronum.database.mongo.Database
+import we.rashchenko.patronum.database.Database
 import java.util.*
 
 internal class DatabaseTest {
