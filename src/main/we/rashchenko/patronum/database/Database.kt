@@ -11,11 +11,11 @@ import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Filters
-import com.mongodb.client.model.Indexes
 import com.mongodb.client.model.Updates
 import org.bson.codecs.configuration.CodecRegistries
 import org.bson.codecs.configuration.CodecRegistries.fromCodecs
 import org.bson.conversions.Bson
+import org.bson.types.ObjectId
 import we.rashchenko.patronum.SearchRequest
 import we.rashchenko.patronum.Tag
 import we.rashchenko.patronum.User
@@ -27,6 +27,13 @@ class Database {
     private val usersCollection: MongoCollection<User>
     private val wishesCollection: MongoCollection<Wish>
     private val tagsCollection: MongoCollection<Tag>
+
+    private val scoreReportPenalty: Double
+    private val scoreCancelPenalty: Double
+    private val scoreRefusePenalty: Double
+    private val scoreFinishPatronBonusMax: Double
+    private val scoreFinishReceiverPenalty: Double
+    private val scoreNewWishPenalty: Double
 
     init {
         val properties = java.util.Properties()
@@ -52,29 +59,55 @@ class Database {
             CodecRegistries.fromRegistries(
                 getDefaultCodecRegistry(), fromCodecs(WishCodec())
             )
-        ).apply {
-            createIndex(Indexes.geo2dsphere("wishArea"))
-        }
+        )
         tagsCollection = database.getCollection("tags", Tag::class.java).withCodecRegistry(
             CodecRegistries.fromRegistries(
                 getDefaultCodecRegistry(), fromCodecs(TagCodec())
             )
         )
+
+        scoreReportPenalty = (properties["score.report"] as String).toDouble()
+        scoreCancelPenalty = (properties["score.cancel"] as String).toDouble()
+        scoreRefusePenalty = (properties["score.refuse"] as String).toDouble()
+        scoreFinishPatronBonusMax = (properties["score.finish.patron"] as String).toDouble()
+        scoreFinishReceiverPenalty = (properties["score.finish.receiver"] as String).toDouble()
+        scoreNewWishPenalty = (properties["score.make_a_wish"] as String).toDouble()
     }
 
-    fun putUser(user: User) {
+    fun newUser(user: User) {
         usersCollection.insertOne(user)
     }
 
-    fun removeUser(user: User) {
+    internal fun removeUser(user: User) {
         usersCollection.deleteOne(Filters.eq("_id", user.id))
+    }
+
+    fun getUser(telegramId: Long): User? {
+        return usersCollection.find(Filters.eq("telegramId", telegramId)).first()
+    }
+
+    fun isUserFulfilling(telegramId: Long): Boolean{
+        val user = getUser(telegramId)!!
+        // todo optimize by telling db to stop searching after first match
+        return wishesCollection.find(Filters.eq("patronId", user.id)).first() != null
+    }
+
+    fun isUserHaveWishes(telegramId: Long): Boolean{
+        val user = getUser(telegramId)!!
+        // todo optimize by telling db to stop searching after first match
+        return wishesCollection.find(Filters.eq("authorId", user.id)).first() != null
+    }
+
+    fun reportUser(user: User){
+        updateUserScore(user.id, scoreReportPenalty)
     }
 
     fun putWish(wish: Wish) {
         wishesCollection.insertOne(wish)
+        updateUserScore(wish.authorId, scoreNewWishPenalty)
     }
 
-    fun removeWish(wish: Wish) {
+    internal fun removeWish(wish: Wish) {
         wishesCollection.deleteOne(Filters.eq("_id", wish.id))
     }
 
@@ -97,15 +130,31 @@ class Database {
         )
     }
 
-    fun cancelWish(wish: Wish, patron: User) {
-        wishesCollection.findOneAndUpdate(
-            Filters.eq("_id", wish.id), Updates.unset("patron_id")
-        )
+    fun cancelWish(patronTelegramId: Long) {
+        val patron = getUser(patronTelegramId)!!
+        val wish = wishesCollection.find(Filters.eq("patron_id", patron.id)).first()
+        wish?.let{
+            wishesCollection.findOneAndUpdate(
+                Filters.eq("_id", wish.id), Updates.unset("patron_id")
+            )
+        }
+        updateUserScore(patron.id, scoreCancelPenalty)
     }
 
-    fun finishWish(wish: Wish, patron: User) {
-        removeWish(wish)
-        // todo: increase patron's score
+    fun finishWish(patronTelegramId: Long) {
+        val patron = getUser(patronTelegramId)!!
+        val wish = wishesCollection.find(Filters.eq("patron_id", patron.id)).first()
+        wish?.let{
+            wishesCollection.findOneAndUpdate(
+                Filters.eq("_id", wish.id), Updates.unset("patron_id")
+            )
+        }
+        updateUserScore(patron.id, scoreFinishPatronBonusMax)
+    }
+
+    private fun updateUserScore(userId: ObjectId, scoreUpdate: Double) {
+        wishesCollection.findOneAndUpdate(
+            Filters.eq("_id", userId), Updates.inc("score", scoreUpdate))
     }
 
     fun getTag(name: String): Tag {
@@ -114,7 +163,7 @@ class Database {
         }
     }
 
-    fun removeTag(tag: Tag) {
+    internal fun removeTag(tag: Tag) {
         tagsCollection.deleteOne(Filters.eq("_id", tag.id))
     }
 }

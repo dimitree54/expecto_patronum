@@ -1,0 +1,52 @@
+package we.rashchenko.patronum.telegram
+
+import com.github.kotlintelegrambot.Bot
+import com.github.kotlintelegrambot.dispatcher.handlers.Handler
+import com.github.kotlintelegrambot.entities.ChatId
+import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
+import com.github.kotlintelegrambot.entities.ParseMode
+import com.github.kotlintelegrambot.entities.Update
+import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
+import we.rashchenko.patronum.getLocalisedMessage
+
+
+class RegistrationHandler(
+    private val externalCheckUpdate: (Update) -> Boolean, private val onSuccessfulRegistration: (Long) -> Unit
+) : Handler {
+
+    override fun checkUpdate(update: Update) = externalCheckUpdate(update)
+
+    override fun handleUpdate(bot: Bot, update: Update) {
+        update.message?.let {
+            val chatId = ChatId.fromId(it.chat.id)
+            val languageCode = it.from?.languageCode
+            if (it.text == "/start") {
+                bot.sendMessage(
+                    chatId = chatId,
+                    text = getLocalisedMessage("onboarding", languageCode),
+                    parseMode = ParseMode.MARKDOWN,
+                    disableWebPagePreview = true
+                )
+                bot.sendMessage(
+                    chatId = chatId,
+                    text = getLocalisedMessage("accept_prompt", languageCode),
+                    replyMarkup = InlineKeyboardMarkup.create(
+                        listOf(
+                            InlineKeyboardButton.CallbackData(
+                                text = getLocalisedMessage("accept", languageCode), callbackData = "accept"
+                            )
+                        )
+                    )
+                )
+            }
+        } ?: update.callbackQuery?.let {
+            if (it.data == "accept") {
+                val chatId = it.message?.chat?.id ?: return
+                bot.sendMessage(
+                    ChatId.fromId(chatId), text = getLocalisedMessage("after_onboarding", it.from.languageCode)
+                )
+                onSuccessfulRegistration(it.from.id)
+            }
+        }
+    }
+}

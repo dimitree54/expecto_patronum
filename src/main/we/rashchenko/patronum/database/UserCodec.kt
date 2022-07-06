@@ -5,6 +5,7 @@ import org.bson.BsonString
 import org.bson.BsonWriter
 import org.bson.Document
 import org.bson.codecs.*
+import org.bson.types.ObjectId
 import we.rashchenko.patronum.User
 
 class UserCodec : CollectibleCodec<User> {
@@ -19,13 +20,20 @@ class UserCodec : CollectibleCodec<User> {
     ) {
         val userDoc = Document()
         userDoc["_id"] = user.id
-        userDoc["name"] = user.name
+        userDoc["telegramId"] = user.telegramId
+        userDoc["score"] = user.score
+        userDoc["wishBlackList"] = user.wishBlackList
+        userDoc["userBlackList"] = user.userBlackList
         documentCodec.encode(bsonWriter, userDoc, encoderContext)
     }
 
     override fun decode(bsonReader: BsonReader, decoderContext: DecoderContext): User {
         val userDoc = documentCodec.decode(bsonReader, decoderContext)
-        return User(userDoc.getString("name"), userDoc.getObjectId("_id"))
+        return User(userDoc.getLong("telegramId"), userDoc.getObjectId("_id")).apply {
+            score = userDoc.getDouble("score")
+            wishBlackList.addAll(userDoc.getList("wishBlackList", ObjectId::class.java))
+            userBlackList.addAll(userDoc.getList("userBlackList", ObjectId::class.java))
+        }
     }
 
     override fun getEncoderClass(): Class<User> {

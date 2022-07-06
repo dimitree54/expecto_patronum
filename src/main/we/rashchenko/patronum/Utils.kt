@@ -2,6 +2,7 @@ package we.rashchenko.patronum
 
 import com.mongodb.client.model.geojson.Polygon
 import com.mongodb.client.model.geojson.Position
+import java.util.*
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -13,4 +14,8 @@ fun circle2polygon(x: Double, y: Double, radius: Double): Polygon {
             Position(x + radius * cos(angle), y + radius * sin(angle))
         }
     )
+}
+
+fun getLocalisedMessage(message: String, languageCode: String?): String {
+    return ResourceBundle.getBundle("message", Locale.forLanguageTag(languageCode)).getString(message)
 }

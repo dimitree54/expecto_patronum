@@ -12,7 +12,7 @@ import java.util.*
 
 internal class DatabaseTest {
     private val database = Database()
-    private val user = User("testUser1")
+    private val user = User(-1L)
     private val tag1 = database.getTag("testTag1")
     private val tag2 = database.getTag("testTag2")
     private val wish = Wish(user.id).also {
@@ -26,13 +26,13 @@ internal class DatabaseTest {
 
     @BeforeEach
     fun init() {
-        database.putUser(user)
+        database.newUser(user)
         database.putWish(wish)
     }
 
     @Test
     fun searchByTag() {
-        val potentialPatron = User("testUser2")
+        val potentialPatron = User(-2L)
         val res1= database.search(SearchRequest(potentialPatron).also { it.tagIds = listOf(tag1.id) }).toList()
         assert(res1.size == 1)
         assert(res1[0].id == wish.id)
@@ -42,7 +42,7 @@ internal class DatabaseTest {
 
     @Test
     fun searchByLocation() {
-        val potentialPatron = User("testUser2")
+        val potentialPatron = User(-1L)
         val res1 = database.search(SearchRequest(potentialPatron).apply { searchArea = circle2polygon(20.0, 0.0, 11.0) }).toList()
         assert(res1.size == 1)
         assert(res1[0].id == wish.id)
