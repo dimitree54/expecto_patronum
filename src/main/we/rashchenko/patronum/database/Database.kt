@@ -83,6 +83,8 @@ class Database {
     }
 
     fun getUser(telegramId: Long): User? {
+        // todo optimize by telling db to stop searching after first match
+        // todo index database by telegramId
         return usersCollection.find(Filters.eq("telegramId", telegramId)).first()
     }
 
@@ -104,7 +106,7 @@ class Database {
 
     fun putWish(wish: Wish) {
         wishesCollection.insertOne(wish)
-        updateUserScore(wish.authorId, scoreNewWishPenalty)
+        updateUserScore(wish.authorId!!, scoreNewWishPenalty)
     }
 
     internal fun removeWish(wish: Wish) {

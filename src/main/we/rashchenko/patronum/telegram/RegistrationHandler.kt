@@ -11,10 +11,10 @@ import we.rashchenko.patronum.getLocalisedMessage
 
 
 class RegistrationHandler(
-    private val externalCheckUpdate: (Update) -> Boolean, private val onSuccessfulRegistration: (Long) -> Unit
+    private val externalCheckUpdate: (Long) -> Boolean, private val onSuccessfulRegistration: (Long) -> Unit
 ) : Handler {
 
-    override fun checkUpdate(update: Update) = externalCheckUpdate(update)
+    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it.id) } ?: false
 
     override fun handleUpdate(bot: Bot, update: Update) {
         update.message?.let {
