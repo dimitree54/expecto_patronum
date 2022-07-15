@@ -1,10 +1,8 @@
 package we.rashchenko.patronum.telegram
 
 import com.github.kotlintelegrambot.Bot
-import com.github.kotlintelegrambot.entities.ChatId
-import com.github.kotlintelegrambot.entities.ParseMode
-import com.github.kotlintelegrambot.entities.Update
-import com.github.kotlintelegrambot.entities.User
+import com.github.kotlintelegrambot.entities.*
+import we.rashchenko.patronum.UserStatistics
 import we.rashchenko.patronum.Wish
 import we.rashchenko.patronum.getLocalisedMessage
 
@@ -17,10 +15,27 @@ fun getChatId(update: Update): ChatId.Id? {
         ?: update.callbackQuery?.message?.chat?.id?.let { ChatId.fromId(it) }
 }
 
+fun askAndWaitForAnswer(
+    answer: Message?, sendRequestMessage: () -> Unit, checkValidText: (Message?) -> Boolean
+): Message? {
+    return if (checkValidText(answer)) {
+        answer
+    } else {
+        sendRequestMessage()
+        null
+    }
+}
+
 fun sendWishCard(bot: Bot, user: User, chatId: ChatId.Id, wish: Wish) {
     bot.sendMessage(chatId = chatId, text = "**${wish.title}**\n${wish.description}" + (wish.location?.let {
         getLocalisedMessage(
-            "request_confirmation", user.languageCode
+            "location_format", user.languageCode
         ).format(wish.radius, it)
     } ?: ""), parseMode = ParseMode.MARKDOWN)
+}
+
+fun sendUserStatistics(bot: Bot, user: User, chatId: ChatId.Id, stats: UserStatistics) {
+    bot.sendMessage(chatId = chatId, text = getLocalisedMessage("user_statistics_format", user.languageCode).format(
+        stats.numActiveWishes, stats.numFulfilledUserWishes, stats.numFulfilledByUserWishes, stats.score, stats.rating
+    ))
 }

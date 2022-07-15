@@ -36,7 +36,8 @@ class WishCodec : CollectibleCodec<Wish> {
 
     override fun decode(bsonReader: BsonReader, decoderContext: DecoderContext): Wish {
         val wishDoc = documentCodec.decode(bsonReader, decoderContext)
-        return Wish(wishDoc.getObjectId("author_id"), wishDoc.getObjectId("_id")).apply {
+        return Wish(wishDoc.getObjectId("_id")).apply {
+            wishDoc.getObjectId("author_id")?.let { authorId = it }
             wishDoc.getString("title")?.let { title = it }
             wishDoc.getString("description")?.let { description = it }
             wishDoc.getString("image")?.let { image = it }

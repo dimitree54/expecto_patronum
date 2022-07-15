@@ -2,13 +2,16 @@ package we.rashchenko.patronum.telegram
 
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
-import com.github.kotlintelegrambot.dispatcher.location
 import we.rashchenko.patronum.User
 import we.rashchenko.patronum.database.Database
 
 class ExpectoPatronum {
     private val database = Database()
     private val chatStates = mutableMapOf<Long, MainState>()
+
+    private enum class MainState {
+        NEW_USER, MENU, MAKE_A_WISH, SEARCH, BROWSER, MY_WISHES, MANAGE_WISH
+    }
 
     private fun isUserInDatabase(telegramUserId: Long): Boolean {
         return database.getUser(telegramUserId) != null
@@ -29,12 +32,20 @@ class ExpectoPatronum {
         return chatStates[telegramUserId] == MainState.MAKE_A_WISH
     }
 
-    private fun isDoGoodRequired(telegramUserId: Long): Boolean {
-        return chatStates[telegramUserId] == MainState.DO_GOOD
+    private fun isSearchRequired(telegramUserId: Long): Boolean {
+        return chatStates[telegramUserId] == MainState.SEARCH
+    }
+
+    private fun isBrowserRequired(telegramUserId: Long): Boolean{
+        return chatStates[telegramUserId] == MainState.BROWSER
     }
 
     private fun isMyWishesRequired(telegramUserId: Long): Boolean{
         return chatStates[telegramUserId] == MainState.MY_WISHES
+    }
+
+    private fun isManageWishRequired(telegramUserId: Long): Boolean{
+        return chatStates[telegramUserId] == MainState.MANAGE_WISH
     }
 
     private fun buildRegistrationHandler(repeater: Repeater) = RegistrationHandler(
@@ -47,14 +58,14 @@ class ExpectoPatronum {
 
     private fun buildMenuHandler(repeater: Repeater) = MenuHandler(
         externalCheckUpdate = ::isMenuRequired,
-        isUserFulfilling = database::isUserFulfilling,
-        isUserHaveWishes = database::isUserHaveWishes,
+        getWishUserFulfilling = database::getWishUserFulfilling,
+        getUserStatistics = database::getUserStatistics,
         onMakeWishPressed = {
             chatStates[it] = MainState.MAKE_A_WISH
             repeater.requestRepeat()
         },
-        onDoGoodPressed = {
-            chatStates[it] = MainState.DO_GOOD
+        onSearchPressed = {
+            chatStates[it] = MainState.SEARCH
             repeater.requestRepeat()
         },
         onCancelFulfillmentPressed = {
@@ -70,8 +81,7 @@ class ExpectoPatronum {
     private fun buildMakeAWishHandler(repeater: Repeater) = MakeAWishHandler(
         externalCheckUpdate = ::isMakeAWishRequired,
         onWishCreated = { telegramUserId, wish ->
-            val user = database.getUser(telegramUserId)!!
-            wish.authorId = user.id
+            wish.authorId = database.getUser(telegramUserId)!!.id
             database.putWish(wish)
             chatStates[telegramUserId] = MainState.MENU
             repeater.requestRepeat()
@@ -82,7 +92,59 @@ class ExpectoPatronum {
         }
     )
 
-    private fun buildDoGoodHandler(repeater: Repeater) = DoGoodHandler(
+    private fun buildSearchHandler(repeater: Repeater, browserHandler: BrowserHandler) = SearchHandler(
+        externalCheckUpdate = ::isSearchRequired,
+        onSearchRequestCreated = { telegramUserId, searchRequest ->
+            searchRequest.author = database.getUser(telegramUserId)!!
+            browserHandler.registerSearchRequest(telegramUserId, searchRequest)
+            chatStates[telegramUserId] = MainState.BROWSER
+            repeater.requestRepeat()
+        },
+        onCancel = {
+            chatStates[it] = MainState.MENU
+            repeater.requestRepeat()
+        }
+    )
+
+    private fun buildBrowserHandler(repeater: Repeater) = BrowserHandler(
+        database,
+        externalCheckUpdate = ::isBrowserRequired,
+        onMatch = { telegramUserId, wish ->
+            //establishContact()
+            chatStates[telegramUserId] = MainState.MENU
+            repeater.requestRepeat()
+        },
+        onCancel = {
+            chatStates[it] = MainState.MENU
+            repeater.requestRepeat()
+        }
+    )
+
+    private fun buildManageWishHandler(repeater: Repeater) = ManageWishHandler(
+        externalCheckUpdate = ::isManageWishRequired,
+        onWishDelete = { telegramUserId, wish ->
+            database.removeWish(wish)
+            chatStates[telegramUserId] = MainState.MENU
+            repeater.requestRepeat()
+        },
+        onCancel = {
+            chatStates[it] = MainState.MENU
+            repeater.requestRepeat()
+        }
+    )
+
+    private fun buildMyWishesHandler(repeater: Repeater, manageWishHandler: ManageWishHandler) = MyWishesHandler(
+        externalCheckUpdate = ::isMyWishesRequired,
+        getUserWishes = database::getUserWishes,
+        onWishChosen = { telegramUserId, wish ->
+            chatStates[telegramUserId] = MainState.MANAGE_WISH
+            manageWishHandler.registerChosenWish(telegramUserId, wish)
+            repeater.requestRepeat()
+        },
+        onCancel = {
+            chatStates[it] = MainState.MENU
+            repeater.requestRepeat()
+        }
     )
 
     fun build() = bot {
@@ -103,9 +165,19 @@ class ExpectoPatronum {
             addHandler(makeAWishHandler)
             repeater.addHandler(makeAWishHandler)
 
-            val doGoodHandler = buildDoGoodHandler(repeater)
-            addHandler(doGoodHandler)
-            repeater.addHandler(doGoodHandler)
+            val browserHandler = buildBrowserHandler(repeater)
+            val searchHandler = buildSearchHandler(repeater, browserHandler)
+            addHandler(searchHandler)
+            repeater.addHandler(searchHandler)
+            addHandler(browserHandler)
+            repeater.addHandler(browserHandler)
+
+            val manageWishHandler = buildManageWishHandler(repeater)
+            val myWishesHandler = buildMyWishesHandler(repeater, manageWishHandler)
+            addHandler(myWishesHandler)
+            repeater.addHandler(myWishesHandler)
+            addHandler(manageWishHandler)
+            repeater.addHandler(manageWishHandler)
 
             repeater.addHandler(repeater)  // to support several repeat requests in a row, BEWARE OF INFINITE LOOPS
             addHandler(repeater)  // Repeater must be last handler
