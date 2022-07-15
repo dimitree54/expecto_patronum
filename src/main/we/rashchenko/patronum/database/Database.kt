@@ -16,10 +16,7 @@ import org.bson.codecs.configuration.CodecRegistries
 import org.bson.codecs.configuration.CodecRegistries.fromCodecs
 import org.bson.conversions.Bson
 import org.bson.types.ObjectId
-import we.rashchenko.patronum.SearchRequest
-import we.rashchenko.patronum.Tag
-import we.rashchenko.patronum.User
-import we.rashchenko.patronum.Wish
+import we.rashchenko.patronum.*
 
 class Database {
     private val mongoClient: MongoClient
@@ -88,16 +85,19 @@ class Database {
         return usersCollection.find(Filters.eq("telegramId", telegramId)).first()
     }
 
-    fun isUserFulfilling(telegramId: Long): Boolean{
+    fun getWishUserFulfilling(telegramId: Long): Wish?{
         val user = getUser(telegramId)!!
         // todo optimize by telling db to stop searching after first match
-        return wishesCollection.find(Filters.eq("patronId", user.id)).first() != null
+        return wishesCollection.find(Filters.eq("patronId", user.id)).first()
     }
 
-    fun isUserHaveWishes(telegramId: Long): Boolean{
+    fun getUserStatistics(telegramId: Long): UserStatistics {
+        return UserStatistics()
+    }
+
+    fun getUserWishes(telegramId: Long): List<Wish> {
         val user = getUser(telegramId)!!
-        // todo optimize by telling db to stop searching after first match
-        return wishesCollection.find(Filters.eq("authorId", user.id)).first() != null
+        return wishesCollection.find(Filters.eq("authorId", user.id)).toList()
     }
 
     fun reportUser(user: User){
