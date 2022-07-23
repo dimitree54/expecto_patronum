@@ -73,10 +73,11 @@ class ExpectoPatronum {
 
     private fun buildRegistrationHandler(repeater: Repeater) =
         RegistrationHandler(externalCheckUpdate = ::isRegistrationRequired,
-            onSuccessfulRegistration = { telegramUserId ->
-                val newUser = PatronUser(database.generateNewUserId(), telegramUserId, UserStats(newUserReputation))
+            onSuccessfulRegistration = { telegramUser ->
+                val newUser = PatronUser(database.generateNewUserId(), telegramUser.id, UserStats(newUserReputation))
+                newUser.languageCode = telegramUser.languageCode
                 database.newUser(newUser)
-                chatStates[telegramUserId] = MainState.MENU
+                chatStates[telegramUser.id] = MainState.MENU
                 repeater.requestRepeat()
             })
 
@@ -132,11 +133,15 @@ class ExpectoPatronum {
             repeater.requestRepeat()
         })
 
-    private fun acceptWish(patronTelegramId: Long, wish: Wish){
+    private fun acceptWish(patronTelegramId: Long, wish: Wish) {
         val patron = database.getUserByTelegramId(patronTelegramId)!!
         database.acceptWish(patron, wish)
         val roomTelegramId = hotel.openRoom(wish.title.value, listOf(wish.author.telegramId, patronTelegramId))
-        database.openWishRoom(WishRoom(database.generateNewRoomId(), roomTelegramId, wish))
+        val newRoom = WishRoom(database.generateNewRoomId(), roomTelegramId, wish).apply {
+            wish.author.languageCode?.let { addLanguageCode(it) }
+            patron.languageCode?.let { addLanguageCode(it) }
+        }
+        database.openWishRoom(newRoom)
     }
 
     private fun buildBrowserHandler(repeater: Repeater) =

@@ -24,6 +24,7 @@ class PatronUserCodec :
         doc["telegramId"] = user.telegramId
         doc["wishIdBlackList"] = user.wishIdBlackList.map { ObjectId(it) }
         doc["authorIdBlackList"] = user.authorIdBlackList.map { ObjectId(it) }
+        user.languageCode ?.let { doc["languageCode"] = it }
 
         doc["stats.reputation"] = user.stats.reputation
         doc["stats.reportsSent"] = user.stats.reportsSent
@@ -54,6 +55,7 @@ class PatronUserCodec :
         ).apply {
             wishIdBlackList.addAll(doc.getList("wishIdBlackList", ObjectId::class.java).map { it.toHexString() })
             authorIdBlackList.addAll(doc.getList("authorIdBlackList", ObjectId::class.java).map { it.toHexString() })
+            doc.getString("languageCode")?.let { languageCode = it }
         }
     }
 

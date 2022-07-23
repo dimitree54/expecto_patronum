@@ -2,16 +2,13 @@ package we.rashchenko.patronum.ui.telegram.bot
 
 import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.dispatcher.handlers.Handler
-import com.github.kotlintelegrambot.entities.ChatId
-import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
-import com.github.kotlintelegrambot.entities.ParseMode
-import com.github.kotlintelegrambot.entities.Update
+import com.github.kotlintelegrambot.entities.*
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 
 
 class RegistrationHandler(
-    private val externalCheckUpdate: (Long) -> Boolean, private val onSuccessfulRegistration: (Long) -> Unit
+    private val externalCheckUpdate: (Long) -> Boolean, private val onSuccessfulRegistration: (User) -> Unit
 ) : Handler {
 
     override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it.id) } ?: false
@@ -45,7 +42,7 @@ class RegistrationHandler(
                 bot.sendMessage(
                     ChatId.fromId(chatId), text = getLocalisedMessage("after_onboarding", it.from.languageCode)
                 )
-                onSuccessfulRegistration(it.from.id)
+                onSuccessfulRegistration(it.from)
             }
         }
     }
