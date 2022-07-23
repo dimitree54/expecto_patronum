@@ -19,6 +19,11 @@ class RegistrationHandler(
             val languageCode = it.from?.languageCode
             if (it.text == "/start") {
                 bot.sendMessage(
+                    chatId = chatId, text = getLocalisedMessage("info", languageCode),
+                    parseMode = ParseMode.MARKDOWN,
+                    disableWebPagePreview = true
+                )
+                bot.sendMessage(
                     chatId = chatId,
                     text = getLocalisedMessage("onboarding", languageCode),
                     parseMode = ParseMode.MARKDOWN,

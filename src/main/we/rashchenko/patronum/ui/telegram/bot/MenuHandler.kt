@@ -2,10 +2,7 @@ package we.rashchenko.patronum.ui.telegram.bot
 
 import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.dispatcher.handlers.Handler
-import com.github.kotlintelegrambot.entities.ChatId
-import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
-import com.github.kotlintelegrambot.entities.Update
-import com.github.kotlintelegrambot.entities.User
+import com.github.kotlintelegrambot.entities.*
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import we.rashchenko.patronum.database.stats.GlobalStats
 import we.rashchenko.patronum.database.stats.UserStats
@@ -54,6 +51,11 @@ class MenuHandler(
     }
 
     private fun sendGreetings(bot: Bot, user: User, chatId: ChatId.Id, stats: UserStats, globalStats: GlobalStats) {
+        bot.sendMessage(
+            chatId = chatId, text = getLocalisedMessage("info", user.languageCode),
+            parseMode = ParseMode.MARKDOWN,
+            disableWebPagePreview = true
+        )
         bot.sendMessage(
             chatId = chatId, text = getLocalisedMessage("greetings", user.languageCode)
         )
