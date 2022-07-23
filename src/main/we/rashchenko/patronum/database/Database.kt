@@ -1,171 +1,76 @@
 package we.rashchenko.patronum.database
 
-import com.mongodb.ConnectionString
-import com.mongodb.MongoClientSettings
-import com.mongodb.MongoClientSettings.getDefaultCodecRegistry
-import com.mongodb.ServerApi
-import com.mongodb.ServerApiVersion
-import com.mongodb.client.MongoClient
-import com.mongodb.client.MongoClients
-import com.mongodb.client.MongoCollection
-import com.mongodb.client.MongoDatabase
-import com.mongodb.client.model.Aggregates
-import com.mongodb.client.model.Filters
-import com.mongodb.client.model.Updates
-import org.bson.codecs.configuration.CodecRegistries
-import org.bson.codecs.configuration.CodecRegistries.fromCodecs
-import org.bson.conversions.Bson
-import org.bson.types.ObjectId
-import we.rashchenko.patronum.*
+import we.rashchenko.patronum.database.stats.Report
+import we.rashchenko.patronum.hotel.WishRoom
+import we.rashchenko.patronum.search.SearchInfo
+import we.rashchenko.patronum.wishes.Wish
 
-class Database {
-    private val mongoClient: MongoClient
-    private val database: MongoDatabase
-    private val usersCollection: MongoCollection<User>
-    private val wishesCollection: MongoCollection<Wish>
-    private val tagsCollection: MongoCollection<Tag>
+class Database(
+    private val users: UsersDatabase,
+    private val wishes: WishesDatabase,
+    private val reports: ReportsDatabase,
+    private val searchEngine: SearchEngine,
+    private val rooms: RoomsDatabase
+) {
+    fun newUser(user: PatronUser) = users.new(user)
+    fun getUserByTelegramId(telegramId: Long) = users.getByTelegramId(telegramId)
+    fun getGlobalStats() = users.getGlobalStats()
 
-    private val scoreReportPenalty: Double
-    private val scoreCancelPenalty: Double
-    private val scoreRefusePenalty: Double
-    private val scoreFinishPatronBonusMax: Double
-    private val scoreFinishReceiverPenalty: Double
-    private val scoreNewWishPenalty: Double
-
-    init {
-        val properties = java.util.Properties()
-        properties.load(ClassLoader.getSystemResourceAsStream("application.properties"))
-        val protocol = properties["mongodb.protocol"] as String
-        val host = properties["mongodb.host"] as String
-        val user = System.getenv("MONGODB_USER")
-        val password = System.getenv("MONGODB_PASSWORD")
-        val connectionString = ConnectionString("$protocol://$user:$password@$host")
-        val settings: MongoClientSettings = MongoClientSettings.builder().applyConnectionString(connectionString)
-            .serverApi(ServerApi.builder().version(ServerApiVersion.V1).build()).build()
-        mongoClient = MongoClients.create(settings)
-
-        val databaseName = properties["mongodb.database"] as String
-        database = mongoClient.getDatabase(databaseName)
-
-        usersCollection = database.getCollection("users", User::class.java).withCodecRegistry(
-            CodecRegistries.fromRegistries(
-                getDefaultCodecRegistry(), fromCodecs(UserCodec())
-            )
-        )
-        wishesCollection = database.getCollection("wishes", Wish::class.java).withCodecRegistry(
-            CodecRegistries.fromRegistries(
-                getDefaultCodecRegistry(), fromCodecs(WishCodec())
-            )
-        )
-        tagsCollection = database.getCollection("tags", Tag::class.java).withCodecRegistry(
-            CodecRegistries.fromRegistries(
-                getDefaultCodecRegistry(), fromCodecs(TagCodec())
-            )
-        )
-
-        scoreReportPenalty = (properties["score.report"] as String).toDouble()
-        scoreCancelPenalty = (properties["score.cancel"] as String).toDouble()
-        scoreRefusePenalty = (properties["score.refuse"] as String).toDouble()
-        scoreFinishPatronBonusMax = (properties["score.finish.patron"] as String).toDouble()
-        scoreFinishReceiverPenalty = (properties["score.finish.receiver"] as String).toDouble()
-        scoreNewWishPenalty = (properties["score.make_a_wish"] as String).toDouble()
+    fun registerReport(report: Report) {
+        reports.new(report)
+        report.receiver.stats.receiveReport()
+        report.sender.stats.sendReport()
+        report.sender.authorIdBlackList.add(report.receiver.id)
+        report.receiver.authorIdBlackList.add(report.sender.id)
+        users.update(report.sender)
+        users.update(report.receiver)
     }
 
-    fun newUser(user: User) {
-        usersCollection.insertOne(user)
+    fun newWish(wish: Wish){
+        wish.author.stats.myNewWish()
+        wish.author.stats.stakeBounty(wish.bounty)
+        users.update(wish.author)
+        wishes.new(wish)
     }
-
-    internal fun removeUser(user: User) {
-        usersCollection.deleteOne(Filters.eq("_id", user.id))
+    fun getWishesByAuthor(user: PatronUser) = wishes.getByAuthor(user)
+    fun getWishesByPatron(user: PatronUser) = wishes.getByPatron(user)
+    fun cancelWishByAuthor(wish: Wish){
+        wish.author.stats.myWishCancel()
+        users.update(wish.author)
+        wishes.cancel(wish)
     }
-
-    fun getUser(telegramId: Long): User? {
-        // todo optimize by telling db to stop searching after first match
-        // todo index database by telegramId
-        return usersCollection.find(Filters.eq("telegramId", telegramId)).first()
+    fun cancelWishByPatron(wish: Wish){
+        val patron = wish.patron!!
+        patron.stats.othersWishCancel()
+        users.update(patron)
+        wish.patron = null
+        wishes.update(wish)
     }
-
-    fun getWishUserFulfilling(telegramId: Long): Wish?{
-        val user = getUser(telegramId)!!
-        // todo optimize by telling db to stop searching after first match
-        return wishesCollection.find(Filters.eq("patronId", user.id)).first()
+    fun finishWish(wish: Wish, rate: Float = 1f){
+        val patron = wish.patron!!
+        wish.author.stats.myWishDone()
+        patron.stats.othersWishDone(rate, wish.bounty)
+        users.update(wish.author)
+        users.update(patron)
+        wishes.cancel(wish)
     }
-
-    fun getUserStatistics(telegramId: Long): UserStatistics {
-        return UserStatistics()
+    fun acceptWish(patron: PatronUser, wish: Wish){
+        patron.wishIdBlackList.add(wish.id)
+        users.update(patron)
+        wish.patron = patron
+        wishes.update(wish)
     }
-
-    fun getUserWishes(telegramId: Long): List<Wish> {
-        val user = getUser(telegramId)!!
-        return wishesCollection.find(Filters.eq("authorId", user.id)).toList()
+    fun skipWish(patron: PatronUser, wish: Wish){
+        patron.wishIdBlackList.add(wish.id)
+        users.update(patron)
     }
+    fun search(patron: PatronUser, query: SearchInfo) = searchEngine.search(patron, query)
 
-    fun reportUser(user: User){
-        updateUserScore(user.id, scoreReportPenalty)
-    }
+    fun getRoomByTelegramId(telegramId: Long) = rooms.getByTelegramId(telegramId)
+    fun openWishRoom(wishRoom: WishRoom) = rooms.new(wishRoom)
 
-    fun putWish(wish: Wish) {
-        wishesCollection.insertOne(wish)
-        updateUserScore(wish.authorId!!, scoreNewWishPenalty)
-    }
-
-    internal fun removeWish(wish: Wish) {
-        wishesCollection.deleteOne(Filters.eq("_id", wish.id))
-    }
-
-    fun search(searchRequest: SearchRequest): Iterable<Wish> {
-        val pipeline = mutableListOf<Bson>()
-        searchRequest.searchArea?.let {
-            pipeline.add(Aggregates.match(Filters.geoIntersects("wishArea", it)))
-        }
-        searchRequest.tagIds?.let {
-            pipeline.add(Aggregates.match(Filters.`in`("tag_ids", it)))
-        }
-        // pipeline.add(Aggregates.sort(Sorts.descending("User.score")))  // todo: implement score
-
-        return wishesCollection.aggregate(pipeline)
-    }
-
-    fun startWish(wish: Wish, patron: User) {
-        wishesCollection.findOneAndUpdate(
-            Filters.eq("_id", wish.id), Updates.set("patron_id", patron.id)
-        )
-    }
-
-    fun cancelWish(patronTelegramId: Long) {
-        val patron = getUser(patronTelegramId)!!
-        val wish = wishesCollection.find(Filters.eq("patron_id", patron.id)).first()
-        wish?.let{
-            wishesCollection.findOneAndUpdate(
-                Filters.eq("_id", wish.id), Updates.unset("patron_id")
-            )
-        }
-        updateUserScore(patron.id, scoreCancelPenalty)
-    }
-
-    fun finishWish(patronTelegramId: Long) {
-        val patron = getUser(patronTelegramId)!!
-        val wish = wishesCollection.find(Filters.eq("patron_id", patron.id)).first()
-        wish?.let{
-            wishesCollection.findOneAndUpdate(
-                Filters.eq("_id", wish.id), Updates.unset("patron_id")
-            )
-        }
-        updateUserScore(patron.id, scoreFinishPatronBonusMax)
-    }
-
-    private fun updateUserScore(userId: ObjectId, scoreUpdate: Double) {
-        wishesCollection.findOneAndUpdate(
-            Filters.eq("_id", userId), Updates.inc("score", scoreUpdate))
-    }
-
-    fun getTag(name: String): Tag {
-        return tagsCollection.find(Filters.eq("name", name)).first() ?: Tag(name).also {
-            tagsCollection.insertOne(it)
-        }
-    }
-
-    internal fun removeTag(tag: Tag) {
-        tagsCollection.deleteOne(Filters.eq("_id", tag.id))
-    }
+    fun generateNewUserId() = users.generateNewUserId()
+    fun generateNewWishId() = wishes.generateNewWishId()
+    fun generateNewReportId() = reports.generateNewReportId()
+    fun generateNewRoomId() = rooms.generateNewReportId()
 }
