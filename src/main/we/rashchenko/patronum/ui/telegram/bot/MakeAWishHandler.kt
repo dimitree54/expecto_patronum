@@ -26,9 +26,9 @@ class MakeAWishHandler(
 
     init {
         val properties = java.util.Properties()
-        properties.load(ClassLoader.getSystemResourceAsStream("reputation.properties"))
-        maxTitleLength = (properties["limit_len.title"] as String).toInt()
-        maxDescriptionLength = (properties["limit_len.description"] as String).toInt()
+        properties.load(ClassLoader.getSystemResourceAsStream("limits.properties"))
+        maxTitleLength = (properties["maxTitleLength"] as String).toInt()
+        maxDescriptionLength = (properties["maxDescriptionLength"] as String).toInt()
     }
 
     private val userStates = mutableMapOf<Long, MakeAWishState>()

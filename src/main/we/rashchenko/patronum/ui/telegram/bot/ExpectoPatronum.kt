@@ -23,12 +23,12 @@ class ExpectoPatronum {
     }
 
     private val newUserReputation = Properties().let {
-        it.load(javaClass.getResourceAsStream("reputation.properties"))
+        it.load(ClassLoader.getSystemResourceAsStream("reputation.properties"))
         it.getProperty("start").toFloat()
     }
 
     private val expirationPeriod = Properties().let {
-        it.load(javaClass.getResourceAsStream("limits.properties"))
+        it.load(ClassLoader.getSystemResourceAsStream("limits.properties"))
         Period.ofDays(it.getProperty("wishExpirationDays").toInt())
     }
 
