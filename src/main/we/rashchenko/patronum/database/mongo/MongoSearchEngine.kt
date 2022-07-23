@@ -24,6 +24,7 @@ class MongoSearchEngine(
         pipeline.add(Aggregates.match(Filters.nin("_id", patron.wishIdBlackList)))
         pipeline.add(Aggregates.lookup("users", "author_id", "_id", "author"))
         pipeline.add(Aggregates.match(Filters.nin("author._id", patron.authorIdBlackList)))
+        pipeline.add(Aggregates.match(Filters.not(Filters.eq("author._id", patron.id))))
         pipeline.add(Aggregates.sort(Sorts.descending("author.reputation")))
 
         return wishesCollection.aggregate(pipeline)
