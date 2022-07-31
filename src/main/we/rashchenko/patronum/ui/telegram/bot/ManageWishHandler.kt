@@ -14,6 +14,12 @@ class ManageWishHandler(
     private val onWishDelete: (Long, Wish) -> Unit,
     private val onCancel: (Long) -> Unit,
 ) : Handler {
+
+    private enum class State {
+        SEND_CARD, WAIT_FOR_REACTION
+    }
+    private val states = mutableMapOf<Long, State>()
+
     private val userWishes = mutableMapOf<Long, Wish>()
     fun registerChosenWish(userId: Long, wish: Wish) {
         userWishes[userId] = wish
@@ -24,19 +30,24 @@ class ManageWishHandler(
         val user = getTelegramUser(update) ?: return
         val chatId = getChatId(update) ?: return
         val message = update.message
+        val state = states.getOrPut(user.id) { State.SEND_CARD }
 
         val deleteMessage = getLocalisedMessage("delete_wish", user.languageCode)
         val deleteButton = KeyboardButton(deleteMessage)
 
-        val cancelMessage = getLocalisedMessage("cancel_message", user.languageCode)
+        val cancelMessage = getLocalisedMessage("cancel", user.languageCode)
         val cancelButton = KeyboardButton(cancelMessage)
 
-        if (message?.text == cancelMessage) {
+        if (state == State.WAIT_FOR_REACTION && message?.text == cancelMessage) {
+            bot.clearKeyboard(chatId, cancelMessage)
+            states.remove(user.id)
+            userWishes.remove(user.id)
             onCancel(user.id)
             return
         }
 
-        val deleteRequest = askAndWaitForAnswer(message, sendRequestMessage = {
+        askAndWaitForAnswer(message, sendRequestMessage = {
+            sendWishCard(bot, user, chatId, userWishes[user.id]!!)
             bot.sendMessage(
                 chatId,
                 getLocalisedMessage("request_wish_delete", user.languageCode),
@@ -47,10 +58,10 @@ class ManageWishHandler(
                     )
                 )
             )
-        }, checkValidText = {it?.text == deleteMessage})?.text?.toIntOrNull()
-        if (deleteRequest != null) {
-            onWishDelete(user.id, userWishes[user.id]!!)
-            userWishes.remove(user.id)
-        }
+        }, checkValidText = {state == State.WAIT_FOR_REACTION && it?.text == deleteMessage})?: return
+        bot.clearKeyboard(chatId, getLocalisedMessage("remove_my_wish", user.languageCode))
+        onWishDelete(user.id, userWishes[user.id]!!)
+        userWishes.remove(user.id)
+        states.remove(user.id)
     }
 }

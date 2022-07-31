@@ -79,7 +79,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
         }
     }
 
-    fun openRoom(title: String, userIds: List<Long>): Long {
+    fun openRoom(title: String, userIds: List<Long>, onRoomOpened: (Long) -> Unit): Long {
         println("Received open room command. opening room...")
         var chatId: Long? = null
         client.send(
@@ -89,6 +89,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
         ) { resultChat ->
             val chat = resultChat.get()
             chatId = chat.id
+            onRoomOpened(chatId!!)
             sendStartMessage(chat.id){
                 leaveRoom(chat.id)
             }

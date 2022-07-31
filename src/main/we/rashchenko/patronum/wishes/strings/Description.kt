@@ -2,7 +2,7 @@ package we.rashchenko.patronum.wishes.strings
 
 import java.util.*
 
-class Description(value: String) : LimitedLengthString(value, Limits.minLength, Limits.maxLength) {
+class Description(text: String) : LimitedLengthString(text, Limits.minLength, Limits.maxLength) {
     private object Limits{
         val minLength: UInt
         val maxLength: UInt

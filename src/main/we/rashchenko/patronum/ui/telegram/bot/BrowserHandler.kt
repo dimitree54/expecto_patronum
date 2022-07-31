@@ -14,6 +14,10 @@ class BrowserHandler(
     private val onSkip: (Long, Wish) -> Unit,
     private val onCancel: (Long) -> Unit,
 ) : Handler {
+    private enum class State {
+        SEND_FIRST_CARD, WAIT_FOR_REACTION
+    }
+    private val states = mutableMapOf<Long, State>()
     private val ticketsQueue = mutableMapOf<Long, ArrayDeque<Wish>>()
     fun registerSearchResults(telegramUserId: Long, searchResults: Iterable<Wish>) {
         searchResults.toList().let{
@@ -30,28 +34,36 @@ class BrowserHandler(
         val chatId = getChatId(update) ?: return
         val message = update.message
         val tickets = ticketsQueue[user.id]
+        val state = states.getOrPut(user.id) { State.SEND_FIRST_CARD }
 
-        val cancelMessage = getLocalisedMessage("cancel_message", user.languageCode)
+        val cancelMessage = getLocalisedMessage("cancel", user.languageCode)
         val acceptMessage = getLocalisedMessage("accept", user.languageCode)
         val skipMessage = getLocalisedMessage("skip", user.languageCode)
         val cancelButton = KeyboardButton(cancelMessage)
         val acceptButton = KeyboardButton(acceptMessage)
         val skipButton = KeyboardButton(skipMessage)
-        if (message?.text == cancelMessage || tickets == null || tickets.isEmpty()) {
-            if (tickets == null || tickets.isEmpty()) {
-                bot.sendMessage(chatId, getLocalisedMessage("no_results", user.languageCode))
-            }
+
+        if (tickets.isNullOrEmpty()){
+            bot.clearKeyboard(chatId, getLocalisedMessage("no_results", user.languageCode))
+            states.remove(user.id)
             ticketsQueue.remove(user.id)
             onCancel(user.id)
             return
         }
-        else if (message?.text == acceptMessage){
-            bot.sendMessage(chatId, getLocalisedMessage("connect", user.languageCode))
+        if (state == State.WAIT_FOR_REACTION && message?.text == cancelMessage) {
+            states.remove(user.id)
+            ticketsQueue.remove(user.id)
+            onCancel(user.id)
+            return
+        }
+        else if ((state == State.WAIT_FOR_REACTION && message?.text == acceptMessage)){
+            bot.clearKeyboard(chatId, getLocalisedMessage("connect", user.languageCode))
+            states.remove(user.id)
             ticketsQueue.remove(user.id)
             onMatch(user.id, tickets.first())
             return
         }
-        else if (message?.text == skipMessage){
+        else if ((state == State.WAIT_FOR_REACTION && message?.text == skipMessage)){
             onSkip(user.id, tickets.first())
             tickets.removeFirst()
         }
@@ -65,5 +77,6 @@ class BrowserHandler(
                 )
             )
         )
+        states[user.id] = State.WAIT_FOR_REACTION
     }
 }

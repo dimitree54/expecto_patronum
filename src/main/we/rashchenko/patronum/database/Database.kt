@@ -27,10 +27,10 @@ class Database(
     }
 
     fun newWish(wish: Wish){
+        wishes.new(wish)
         wish.author.stats.myNewWish()
         wish.author.stats.stakeBounty(wish.bounty)
         users.update(wish.author)
-        wishes.new(wish)
     }
     fun getWishesByAuthor(user: PatronUser) = wishes.getByAuthor(user)
     fun getWishesByPatron(user: PatronUser) = wishes.getByPatron(user)

@@ -2,6 +2,7 @@ package we.rashchenko.patronum.ui.telegram.bot
 
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
+import com.github.kotlintelegrambot.logging.LogLevel
 import we.rashchenko.patronum.database.Database
 import we.rashchenko.patronum.database.PatronUser
 import we.rashchenko.patronum.database.mongo.MongoDatabaseBuilder
@@ -84,7 +85,7 @@ class ExpectoPatronum {
     private fun buildMenuHandler(repeater: Repeater) =
         MenuHandler(externalCheckUpdate = ::isMenuRequired, getWishUserFulfilling = { telegramUserId ->
             database.getUserByTelegramId(telegramUserId)?.let {
-                database.getWishesByPatron(it).first()
+                database.getWishesByPatron(it).firstOrNull()
             }
         }, getUserStatistics = {
             database.getUserByTelegramId(it)!!.stats
@@ -136,12 +137,13 @@ class ExpectoPatronum {
     private fun acceptWish(patronTelegramId: Long, wish: Wish) {
         val patron = database.getUserByTelegramId(patronTelegramId)!!
         database.acceptWish(patron, wish)
-        val roomTelegramId = hotel.openRoom(wish.title.value, listOf(wish.author.telegramId, patronTelegramId))
-        val newRoom = WishRoom(database.generateNewRoomId(), roomTelegramId, wish).apply {
-            wish.author.languageCode?.let { addLanguageCode(it) }
-            patron.languageCode?.let { addLanguageCode(it) }
+        hotel.openRoom(wish.title.text, listOf(wish.author.telegramId, patronTelegramId)){roomTelegramId ->
+            val newRoom = WishRoom(database.generateNewRoomId(), roomTelegramId, wish).apply {
+                wish.author.languageCode?.let { addLanguageCode(it) }
+                patron.languageCode?.let { addLanguageCode(it) }
+            }
+            database.openWishRoom(newRoom)
         }
-        database.openWishRoom(newRoom)
     }
 
     private fun buildBrowserHandler(repeater: Repeater) =
@@ -183,6 +185,7 @@ class ExpectoPatronum {
     fun build() = bot {
         token = System.getenv("TELEGRAM_EP_MAIN_BOT_TOKEN")
         timeout = 30
+        logLevel = LogLevel.Error
         val repeater = Repeater()
 
         dispatch {

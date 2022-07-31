@@ -5,10 +5,10 @@ import com.github.kotlintelegrambot.entities.*
 import we.rashchenko.patronum.database.stats.GlobalStats
 import we.rashchenko.patronum.database.stats.UserStats
 import we.rashchenko.patronum.search.SearchInfo
-import we.rashchenko.patronum.search.SearchInfoDraft
 import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 import we.rashchenko.patronum.wishes.Wish
 import we.rashchenko.patronum.wishes.WishDraft
+import kotlin.math.roundToInt
 
 fun getTelegramUser(update: Update): User? {
     return update.message?.from ?: update.callbackQuery?.from
@@ -31,42 +31,45 @@ fun askAndWaitForAnswer(
 }
 
 fun Wish.formatToString(languageCode: String?): String {
-    return "**${title}**\n${description}\n\n${searchInfo.formatToString(languageCode)}"
+    return "*${title.text.replaceMarkdownSpecialSymbols()}*\n\n${description.text.replaceMarkdownSpecialSymbols()}\n\n${
+        searchInfo.formatToString(
+            languageCode
+        )
+    }"
+}
+
+fun String.replaceMarkdownSpecialSymbols(): String {
+    val specialMarkdownCharacters = listOf("_", "*", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!")
+    return specialMarkdownCharacters.fold(this) { acc, specialCharacter ->
+        acc.replace(specialCharacter, "\\$specialCharacter")
+    }
 }
 
 fun WishDraft.formatToString(languageCode: String?): String {
     val text = StringBuilder()
-    title?.let { text.append("**${it}**\n") } ?: return text.toString()
-    description?.let { text.append("${it}\n\n") } ?: return text.toString()
-    searchInfoDraft?.let { text.append(it.formatToString(languageCode)) } ?: return text.toString()
+    title?.let { text.append("*${it.text.replaceMarkdownSpecialSymbols()}*\n\n") } ?: return text.toString()
+    description?.let { text.append("${it.text.replaceMarkdownSpecialSymbols()}\n\n") } ?: return text.toString()
+    searchInfoDraft?.toSearchInfo()?.let { text.append(it.formatToString(languageCode)) } ?: return text.toString()
     return text.toString()
 }
 
 fun SearchInfo.formatToString(languageCode: String?): String {
     return if (this.searchArea != null) {
-        "<i>${getLocalisedMessage("location_provided", languageCode)}</i>"
+        "_${getLocalisedMessage("location_provided", languageCode).replaceMarkdownSpecialSymbols()}_"
     } else {
-        "<i>${getLocalisedMessage("location_absent", languageCode)}</i>"
-    }
-}
-
-fun SearchInfoDraft.formatToString(languageCode: String?): String {
-    return if (this.location != null && this.radius != null) {
-        "<i>${getLocalisedMessage("location_provided", languageCode)}</i>"
-    } else {
-        "<i>${getLocalisedMessage("location_absent", languageCode)}</i>"
+        "_${getLocalisedMessage("location_absent", languageCode).replaceMarkdownSpecialSymbols()}_"
     }
 }
 
 fun sendWishCard(bot: Bot, user: User, chatId: ChatId.Id, wish: Wish) {
     bot.sendMessage(
-        chatId = chatId, text = wish.formatToString(user.languageCode), parseMode = ParseMode.MARKDOWN
+        chatId = chatId, text = wish.formatToString(user.languageCode), parseMode = ParseMode.MARKDOWN_V2
     )
 }
 
 fun sendWishDraftCard(bot: Bot, user: User, chatId: ChatId.Id, wishDraft: WishDraft) {
     bot.sendMessage(
-        chatId = chatId, text = wishDraft.formatToString(user.languageCode), parseMode = ParseMode.MARKDOWN
+        chatId = chatId, text = wishDraft.formatToString(user.languageCode), parseMode = ParseMode.MARKDOWN_V2
     )
 }
 
@@ -76,8 +79,8 @@ fun sendUserStatistics(bot: Bot, user: User, chatId: ChatId.Id, stats: UserStats
             stats.myWishesActive,
             stats.myWishesDone,
             stats.othersWishesDone,
-            stats.reputation,
-            globalStats.getRateOnLeaderBoard(stats.reputation)
+            stats.reputation.roundToInt(),
+            (globalStats.getRateOnLeaderBoard(stats.reputation) * 100).roundToInt()
         )
     )
 }
@@ -100,4 +103,12 @@ fun Bot.sendCardMultiLanguage(chatId: ChatId, setOfLanguages: Set<String>, wish:
     setOfLanguages.ifEmpty { setOf(null) }.forEach {
         sendMessage(chatId, wish.formatToString(it))
     }
+}
+
+fun Bot.clearKeyboard(chatId: ChatId, message: String) {
+    sendMessage(
+        chatId,
+        message,
+        replyMarkup = ReplyKeyboardRemove()
+    )
 }

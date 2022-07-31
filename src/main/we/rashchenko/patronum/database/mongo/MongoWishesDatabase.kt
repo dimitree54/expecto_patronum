@@ -24,17 +24,17 @@ class MongoWishesDatabase(
     }
 
     override fun get(id: String): Wish? {
-        return cache[id] ?: wishesCollection.find(Filters.eq("_id", ObjectId(id))).first()?.also {
+        return cache[id] ?: wishesCollection.find(Filters.eq("_id", ObjectId(id))).firstOrNull()?.also {
             cache[id] = it
         }
     }
 
     override fun getByAuthor(author: PatronUser): Iterable<Wish> {
-        return wishesCollection.find(Filters.eq("author_id", author.id))
+        return wishesCollection.find(Filters.eq("authorId", ObjectId(author.id)))
     }
 
     override fun getByPatron(patron: PatronUser): Iterable<Wish> {
-        return wishesCollection.find(Filters.eq("patron_id", patron.id))
+        return wishesCollection.find(Filters.eq("patronId", ObjectId(patron.id)))
     }
 
     override fun cancel(wish: Wish) {

@@ -12,7 +12,7 @@ class MongoRoomsDatabase(
     private val cache = mutableMapOf<Long, WishRoom>()
 
     override fun getByTelegramId(telegramId: Long): WishRoom? {
-        return cache[telegramId] ?: roomsCollection.find(Filters.eq("telegramId", telegramId)).first()?.also {
+        return cache[telegramId] ?: roomsCollection.find(Filters.eq("telegramId", telegramId)).firstOrNull()?.also {
             cache[telegramId] = it
         }
     }
@@ -24,7 +24,7 @@ class MongoRoomsDatabase(
 
     override fun update(room: WishRoom) {
         roomsCollection.replaceOne(
-            Filters.eq("_id", room.id), room
+            Filters.eq("_id", ObjectId(room.id)), room
         )
         cache[room.telegramChatId] = room
     }

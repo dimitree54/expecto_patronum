@@ -4,10 +4,10 @@ import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.dispatcher.handlers.Handler
 import com.github.kotlintelegrambot.entities.*
 import com.github.kotlintelegrambot.entities.keyboard.KeyboardButton
+import we.rashchenko.patronum.errors.UserReadableError
 import we.rashchenko.patronum.search.SearchInfoDraft
 import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 import we.rashchenko.patronum.wishes.WishDraft
-import we.rashchenko.patronum.wishes.strings.BadLengthError
 import we.rashchenko.patronum.wishes.strings.Description
 import we.rashchenko.patronum.wishes.strings.Title
 
@@ -17,7 +17,7 @@ class MakeAWishHandler(
     private val onWishCreated: (Long, WishDraft) -> Unit,
     private val onCancel: (Long) -> Unit,
 ) : Handler {
-    private enum class MakeAWishState {
+    private enum class State {
         ASK_FOR_TITLE, WAIT_FOR_TITLE, ASK_FOR_DESCRIPTION, WAIT_FOR_DESCRIPTION, ASK_FOR_LOCATION, WAIT_FOR_LOCATION, ASK_FOR_RADIUS, WAIT_FOR_RADIUS, ASK_FOR_CONFIRMATION, WAIT_FOR_CONFIRMATION
     }
 
@@ -31,7 +31,7 @@ class MakeAWishHandler(
         maxDescriptionLength = (properties["maxDescriptionLength"] as String).toInt()
     }
 
-    private val userStates = mutableMapOf<Long, MakeAWishState>()
+    private val userStates = mutableMapOf<Long, State>()
     private val drafts = mutableMapOf<Long, WishDraft>()
     override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it.id) } ?: false
     override fun handleUpdate(bot: Bot, update: Update) {
@@ -39,9 +39,10 @@ class MakeAWishHandler(
         val chatId = getChatId(update) ?: return
         val message = update.message
 
-        val cancelMessage = getLocalisedMessage("cancel_message", user.languageCode)
+        val cancelMessage = getLocalisedMessage("cancel", user.languageCode)
         val cancelButton = KeyboardButton(cancelMessage)
         if (message?.text == cancelMessage) {
+            bot.clearKeyboard(chatId, cancelMessage)
             userStates.remove(user.id)
             drafts.remove(user.id)
             onCancel(user.id)
@@ -50,21 +51,23 @@ class MakeAWishHandler(
 
         val wishDraft = drafts.getOrPut(user.id) { WishDraft() }
         while (true) {
-            when (userStates.getOrPut(user.id) { MakeAWishState.ASK_FOR_TITLE }) {
-                MakeAWishState.ASK_FOR_TITLE, MakeAWishState.WAIT_FOR_TITLE -> {
+            when (userStates.getOrPut(user.id) { State.ASK_FOR_TITLE }) {
+                State.ASK_FOR_TITLE, State.WAIT_FOR_TITLE -> {
                     if (isTitleStageDone(bot, wishDraft, message, user, chatId, cancelButton)) continue else break
                 }
-                MakeAWishState.ASK_FOR_DESCRIPTION, MakeAWishState.WAIT_FOR_DESCRIPTION -> {
+                State.ASK_FOR_DESCRIPTION, State.WAIT_FOR_DESCRIPTION -> {
                     if (isDescriptionStageDone(bot, wishDraft, message, user, chatId, cancelButton)) continue else break
                 }
-                MakeAWishState.ASK_FOR_LOCATION, MakeAWishState.WAIT_FOR_LOCATION -> {
+                State.ASK_FOR_LOCATION, State.WAIT_FOR_LOCATION -> {
                     if (isLocationStageDone(bot, wishDraft, message, user, chatId, cancelButton)) continue else break
                 }
-                MakeAWishState.ASK_FOR_RADIUS, MakeAWishState.WAIT_FOR_RADIUS -> {
+                State.ASK_FOR_RADIUS, State.WAIT_FOR_RADIUS -> {
                     if (isRadiusStageDone(bot, wishDraft, message, user, chatId, cancelButton)) continue else break
                 }
-                MakeAWishState.ASK_FOR_CONFIRMATION, MakeAWishState.WAIT_FOR_CONFIRMATION -> {
+                State.ASK_FOR_CONFIRMATION, State.WAIT_FOR_CONFIRMATION -> {
                     if (isConfirmationStageDone(bot, wishDraft, message, user, chatId, cancelButton)) {
+                        userStates.remove(user.id)
+                        drafts.remove(user.id)
                         onWishCreated(user.id, wishDraft)
                         return
                     } else break
@@ -73,28 +76,12 @@ class MakeAWishHandler(
         }
     }
 
-    private fun checkValidTitle(message: Message?): Boolean {
-        val text = message?.text ?: return false
-        return try {
-            Title(text)
-            true
-        } catch (e: BadLengthError) {
-            false
-        }
-    }
-
-    private fun checkValidDescription(message: Message?): Boolean {
-        val text = message?.text ?: return false
-        return try {
-            Description(text)
-            true
-        } catch (e: BadLengthError) {
-            false
-        }
-    }
-
     private fun checkValidLocation(message: Message?): Boolean {
         return message?.location?.let { true } ?: false
+    }
+
+    private fun checkSkipLocation(message: Message?, skipMessage: String): Boolean {
+        return message?.text == skipMessage
     }
 
     private fun checkValidRadius(message: Message?): Boolean {
@@ -107,28 +94,29 @@ class MakeAWishHandler(
 
     private fun requestTitle(bot: Bot, user: User, chatId: ChatId.Id, cancelButton: KeyboardButton) {
         bot.sendMessage(
-            chatId = chatId, text = getLocalisedMessage("request_title", user.languageCode).format(
-                maxTitleLength
-            ), replyMarkup = KeyboardReplyMarkup(listOf(listOf(cancelButton)), resizeKeyboard = true)
+            chatId = chatId, text = getLocalisedMessage("request_title", user.languageCode),
+            replyMarkup = KeyboardReplyMarkup(listOf(listOf(cancelButton)), resizeKeyboard = true)
         )
+        userStates[user.id] = State.WAIT_FOR_TITLE
     }
 
     private fun requestDescription(bot: Bot, user: User, chatId: ChatId.Id, cancelButton: KeyboardButton) {
         bot.sendMessage(
-            chatId = chatId, text = getLocalisedMessage("request_description", user.languageCode).format(
-                maxDescriptionLength
-            ), replyMarkup = KeyboardReplyMarkup(listOf(listOf(cancelButton)), resizeKeyboard = true)
+            chatId = chatId, text = getLocalisedMessage("request_description", user.languageCode),
+            replyMarkup = KeyboardReplyMarkup(listOf(listOf(cancelButton)), resizeKeyboard = true)
         )
+        userStates[user.id] = State.WAIT_FOR_DESCRIPTION
     }
 
-    private fun requestLocation(bot: Bot, user: User, chatId: ChatId.Id, cancelButton: KeyboardButton) {
+    private fun requestLocation(bot: Bot, user: User, chatId: ChatId.Id, cancelButton: KeyboardButton, skipButton: KeyboardButton) {
         val shareLocationButton =
             KeyboardButton(getLocalisedMessage("location_share", user.languageCode), requestLocation = true)
         bot.sendMessage(
             chatId = chatId,
             text = getLocalisedMessage("request_location", user.languageCode),
-            replyMarkup = KeyboardReplyMarkup(listOf(listOf(shareLocationButton, cancelButton)), resizeKeyboard = true)
+            replyMarkup = KeyboardReplyMarkup(listOf(listOf(shareLocationButton, skipButton, cancelButton)), resizeKeyboard = true)
         )
+        userStates[user.id] = State.WAIT_FOR_LOCATION
     }
 
     private fun requestRadius(bot: Bot, user: User, chatId: ChatId.Id, cancelButton: KeyboardButton) {
@@ -137,6 +125,7 @@ class MakeAWishHandler(
             text = getLocalisedMessage("request_radius", user.languageCode),
             replyMarkup = KeyboardReplyMarkup(listOf(listOf(cancelButton)), resizeKeyboard = true)
         )
+        userStates[user.id] = State.WAIT_FOR_RADIUS
     }
 
     private fun requestConfirmation(
@@ -151,12 +140,13 @@ class MakeAWishHandler(
             chatId = chatId, text = getLocalisedMessage("request_confirmation_card", user.languageCode)
         )
         sendWishDraftCard(bot, user, chatId, wishDraft)
-        val confirmButton = KeyboardButton(getLocalisedMessage("request_confirmation_submit", user.languageCode))
+        val confirmButton = KeyboardButton(confirmationAnswer)
         bot.sendMessage(
             chatId = chatId,
-            text = confirmationAnswer,
+            text = getLocalisedMessage("request_confirmation_correct", user.languageCode),
             replyMarkup = KeyboardReplyMarkup(listOf(listOf(confirmButton, cancelButton)), resizeKeyboard = true)
         )
+        userStates[user.id] = State.WAIT_FOR_CONFIRMATION
     }
 
     private fun isTitleStageDone(
@@ -165,10 +155,16 @@ class MakeAWishHandler(
         val title = askAndWaitForAnswer(
             message,
             sendRequestMessage = { requestTitle(bot, user, chatId, cancelButton) },
-            checkValidText = ::checkValidTitle
+            checkValidText = { userStates[user.id] == State.WAIT_FOR_TITLE },
         )?.text ?: return false
-        userStates[user.id] = MakeAWishState.ASK_FOR_DESCRIPTION
-        wishDraft.title = Title(title)
+        try{
+            wishDraft.title = Title(title)
+        }
+        catch (e: UserReadableError){
+            bot.sendMessage(chatId, e.getUserReadableMessage(user.languageCode))
+            return false
+        }
+        userStates[user.id] = State.ASK_FOR_DESCRIPTION
         return true
     }
 
@@ -178,24 +174,39 @@ class MakeAWishHandler(
         val description = askAndWaitForAnswer(
             message,
             sendRequestMessage = { requestDescription(bot, user, chatId, cancelButton) },
-            checkValidText = ::checkValidDescription
+            checkValidText = { userStates[user.id] == State.WAIT_FOR_DESCRIPTION },
         )?.text ?: return false
-        userStates[user.id] = MakeAWishState.ASK_FOR_LOCATION
-        wishDraft.description = Description(description)
+        try{
+            wishDraft.description = Description(description)
+        }
+        catch (e: UserReadableError){
+            bot.sendMessage(chatId, e.getUserReadableMessage(user.languageCode))
+            return false
+        }
+        userStates[user.id] = State.ASK_FOR_LOCATION
         return true
     }
 
     private fun isLocationStageDone(
         bot: Bot, wishDraft: WishDraft, message: Message?, user: User, chatId: ChatId.Id, cancelButton: KeyboardButton
     ): Boolean {
-        val location = askAndWaitForAnswer(
+        val skipMessage = getLocalisedMessage("skip", user.languageCode)
+        val skipButton = KeyboardButton(skipMessage)
+        val answer = askAndWaitForAnswer(
             message,
-            sendRequestMessage = { requestLocation(bot, user, chatId, cancelButton) },
-            checkValidText = ::checkValidLocation
-        )?.location ?: return false
-        userStates[user.id] = MakeAWishState.ASK_FOR_RADIUS
-        wishDraft.searchInfoDraft = SearchInfoDraft().also {
-            it.location = we.rashchenko.patronum.search.geo.Location(location.longitude, location.latitude)
+            sendRequestMessage = { requestLocation(bot, user, chatId, cancelButton, skipButton) },
+            checkValidText = { userStates[user.id] == State.WAIT_FOR_LOCATION && (checkValidLocation(it) || checkSkipLocation(it, skipMessage)) }
+        ) ?: return false
+        if (checkSkipLocation(answer, skipMessage)) {
+            userStates[user.id] = State.ASK_FOR_CONFIRMATION
+            wishDraft.searchInfoDraft = SearchInfoDraft()
+        }
+        else{
+            val location = answer.location!!
+            userStates[user.id] = State.ASK_FOR_RADIUS
+            wishDraft.searchInfoDraft = SearchInfoDraft().also {
+                it.location = we.rashchenko.patronum.search.geo.Location(location.longitude, location.latitude)
+            }
         }
         return true
     }
@@ -206,9 +217,9 @@ class MakeAWishHandler(
         val radius = askAndWaitForAnswer(
             message,
             sendRequestMessage = { requestRadius(bot, user, chatId, cancelButton) },
-            checkValidText = ::checkValidRadius
+            checkValidText = { userStates[user.id] == State.WAIT_FOR_RADIUS && checkValidRadius(it) }
         )?.text ?: return false
-        userStates[user.id] = MakeAWishState.ASK_FOR_CONFIRMATION
+        userStates[user.id] = State.ASK_FOR_CONFIRMATION
         wishDraft.searchInfoDraft!!.radius = radius.toFloat()
         return true
     }
@@ -216,13 +227,13 @@ class MakeAWishHandler(
     private fun isConfirmationStageDone(
         bot: Bot, wishDraft: WishDraft, message: Message?, user: User, chatId: ChatId.Id, cancelButton: KeyboardButton
     ): Boolean {
-        val confirmationAnswer = getLocalisedMessage("request_confirmation_correct", user.languageCode)
+        val confirmationAnswer = getLocalisedMessage("request_confirmation_submit", user.languageCode)
         askAndWaitForAnswer(message, sendRequestMessage = {
             requestConfirmation(
                 bot, user, chatId, cancelButton, wishDraft, confirmationAnswer
             )
-        }, checkValidText = { checkConfirmation(it, confirmationAnswer) }) ?: return false
-        bot.sendMessage(chatId, getLocalisedMessage("request_confirmation_wish_done", user.languageCode))
+        }, checkValidText = { userStates[user.id] == State.WAIT_FOR_CONFIRMATION && checkConfirmation(it, confirmationAnswer) }) ?: return false
+        bot.sendMessage(chatId, getLocalisedMessage("request_confirmation_wish_done", user.languageCode), replyMarkup = ReplyKeyboardRemove())
         return true
     }
 }

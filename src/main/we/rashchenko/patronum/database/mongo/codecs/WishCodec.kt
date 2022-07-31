@@ -8,6 +8,7 @@ import org.bson.Document
 import org.bson.codecs.*
 import org.bson.types.ObjectId
 import we.rashchenko.patronum.database.UsersDatabase
+import we.rashchenko.patronum.database.mongo.toMongo
 import we.rashchenko.patronum.search.SearchInfo
 import we.rashchenko.patronum.search.geo.Location
 import we.rashchenko.patronum.search.geo.Polygon
@@ -29,14 +30,14 @@ class WishCodec(private val usersDatabase: UsersDatabase) : CollectibleCodec<Wis
         val doc = Document()
         doc["_id"] = ObjectId(wish.id)
         doc["authorId"] = ObjectId(wish.author.id)
-        doc["title"] = wish.title
-        doc["description"] = wish.description
+        doc["title"] = wish.title.text
+        doc["description"] = wish.description.text
         doc["bounty"] = wish.bounty
         doc["creationDate"] = Date.from(wish.creationDate)
         doc["expirationDate"] = Date.from(wish.expirationDate)
 
         wish.searchInfo.searchArea?.let {polygon ->
-            doc["search.polygon"] = polygon
+            doc["search_polygon"] = polygon.toMongo()
             doc["search.polygon.points.latitude"] = polygon.points.map {
                 it.latitude
             }
@@ -65,8 +66,8 @@ class WishCodec(private val usersDatabase: UsersDatabase) : CollectibleCodec<Wis
     }
 
     private fun parseSearchInfo(doc: Document): SearchInfo {
-        val latitudes = doc.getList("search.polygon.points.latitude", Double::class.java)
-        val longitudes = doc.getList("search.polygon.points.longitude", Double::class.java)
+        val latitudes = doc.getList("search.polygon.points.latitude", Double::class.javaObjectType) ?: return SearchInfo()
+        val longitudes = doc.getList("search.polygon.points.longitude", Double::class.javaObjectType) ?: return SearchInfo()
         return SearchInfo(
             Polygon(
                 (latitudes zip longitudes).map {

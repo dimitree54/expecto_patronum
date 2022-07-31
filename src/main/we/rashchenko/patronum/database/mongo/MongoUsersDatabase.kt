@@ -20,14 +20,14 @@ class MongoUsersDatabase(
     }
 
     override fun get(id: String): PatronUser? {
-        return cache[id] ?: usersCollection.find(Filters.eq("_id", ObjectId(id))).first()?.also {
+        return cache[id] ?: usersCollection.find(Filters.eq("_id", ObjectId(id))).firstOrNull()?.also {
             cache[id] = it
             telegramCache[it.telegramId] = it
         }
     }
 
     override fun getByTelegramId(telegramId: Long): PatronUser? {
-        return telegramCache[telegramId] ?: usersCollection.find(Filters.eq("telegramId", telegramId)).first()?.also {
+        return telegramCache[telegramId] ?: usersCollection.find(Filters.eq("telegramId", telegramId)).firstOrNull()?.also {
             cache[it.id] = it
             telegramCache[it.telegramId] = it
         }

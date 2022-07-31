@@ -22,15 +22,18 @@ class UserStats(var reputation: Float) {
     }
 
     fun myNewWish() {
+        myWishesActive++
         reputation += ReputationDeltas.myNewWish
     }
 
     fun myWishDone() {
+        myWishesActive--
         myWishesDone++
         reputation += ReputationDeltas.myWishDone
     }
 
     fun myWishCancel() {
+        myWishesActive--
         myWishesCancelled++
         reputation += ReputationDeltas.myWishCancel
     }

@@ -17,6 +17,7 @@ dependencies {
 	testImplementation(kotlin("test-junit5"))
 	implementation("org.mongodb:mongodb-driver-sync:4.6.0")
 	implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.7")
+    implementation(kotlin("script-runtime"))
 }
 
 dependencies {
