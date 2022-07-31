@@ -4,14 +4,11 @@ import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Sorts
-import org.bson.Document
 import org.bson.conversions.Bson
 import org.bson.types.ObjectId
 import we.rashchenko.patronum.database.PatronUser
 import we.rashchenko.patronum.database.SearchEngine
 import we.rashchenko.patronum.search.SearchInfo
-import we.rashchenko.patronum.search.geo.Location
-import we.rashchenko.patronum.search.geo.Polygon
 import we.rashchenko.patronum.wishes.Wish
 
 class MongoSearchEngine(

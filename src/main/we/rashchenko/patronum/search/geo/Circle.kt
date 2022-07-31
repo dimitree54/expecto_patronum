@@ -3,7 +3,7 @@ package we.rashchenko.patronum.search.geo
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Circle(val center: Location, val radiusInMeters: Float) {
+class Circle(private val center: Location, private val radiusInMeters: Float) {
     private val earthRadiusInMeters = 6371000f
     fun toGeoPolygon(pointsPerCircle: Int = 16): Polygon{
         if (pointsPerCircle < 3){

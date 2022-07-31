@@ -48,7 +48,7 @@ class ManageWishHandler(
 
         askAndWaitForAnswer(message, sendRequestMessage = {
             states[user.id] = State.WAIT_FOR_REACTION
-            sendWishCard(bot, user, chatId, userWishes[user.id]!!)
+            sendWishCard(bot, chatId, userWishes[user.id]!!, setOf(user.languageCode))
             bot.sendMessage(
                 chatId,
                 getLocalisedMessage("request_wish_delete", user.languageCode),
