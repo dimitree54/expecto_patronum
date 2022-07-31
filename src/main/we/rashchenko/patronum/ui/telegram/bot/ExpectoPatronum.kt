@@ -1,12 +1,15 @@
 package we.rashchenko.patronum.ui.telegram.bot
 
+import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
+import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.logging.LogLevel
 import we.rashchenko.patronum.database.Database
 import we.rashchenko.patronum.database.PatronUser
 import we.rashchenko.patronum.database.mongo.MongoDatabaseBuilder
 import we.rashchenko.patronum.database.stats.UserStats
+import we.rashchenko.patronum.errors.UserReadableError
 import we.rashchenko.patronum.hotel.WishRoom
 import we.rashchenko.patronum.ui.telegram.hotel.TelegramHotel
 import we.rashchenko.patronum.wishes.Wish
@@ -134,21 +137,29 @@ class ExpectoPatronum {
             repeater.requestRepeat()
         })
 
-    private fun acceptWish(patronTelegramId: Long, wish: Wish) {
+    private fun acceptWish(bot: Bot, chatId: ChatId.Id, patronTelegramId: Long, wish: Wish, repeater: Repeater) {
         val patron = database.getUserByTelegramId(patronTelegramId)!!
-        database.acceptWish(patron, wish)
-        hotel.openRoom(wish.title.text, listOf(wish.author.telegramId, patronTelegramId)){roomTelegramId ->
-            val newRoom = WishRoom(database.generateNewRoomId(), roomTelegramId, wish).apply {
-                wish.author.languageCode?.let { addLanguageCode(it) }
-                patron.languageCode?.let { addLanguageCode(it) }
+        try{
+            hotel.openRoom(wish.title.text, listOf(wish.author.telegramId, patronTelegramId)){roomTelegramId ->
+                val newRoom = WishRoom(database.generateNewRoomId(), roomTelegramId, wish).apply {
+                    wish.author.languageCode?.let { addLanguageCode(it) }
+                    patron.languageCode?.let { addLanguageCode(it) }
+                }
+                database.openWishRoom(newRoom)
+                database.acceptWish(patron, wish)
             }
-            database.openWishRoom(newRoom)
+        }
+        catch (e: UserReadableError){
+            val author = database.getUserByTelegramId(wish.author.telegramId)!!
+            bot.sendMessage(chatId, e.getUserReadableMessage(author.languageCode))
+            chatStates[wish.author.telegramId] = MainState.MENU
+            repeater.requestRepeat()
         }
     }
 
     private fun buildBrowserHandler(repeater: Repeater) =
-        BrowserHandler(externalCheckUpdate = ::isBrowserRequired, onMatch = { telegramUserId, wish ->
-            acceptWish(telegramUserId, wish)
+        BrowserHandler(externalCheckUpdate = ::isBrowserRequired, onMatch = { bot, chatId, telegramUserId, wish ->
+            acceptWish(bot, chatId, telegramUserId, wish, repeater)
             chatStates[telegramUserId] = MainState.MENU
             repeater.requestRepeat()
         }, onSkip = { telegramUserId, wish ->

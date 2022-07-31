@@ -47,6 +47,7 @@ class ManageWishHandler(
         }
 
         askAndWaitForAnswer(message, sendRequestMessage = {
+            states[user.id] = State.WAIT_FOR_REACTION
             sendWishCard(bot, user, chatId, userWishes[user.id]!!)
             bot.sendMessage(
                 chatId,

@@ -30,7 +30,7 @@ class MenuHandler(
         sendGreetings(bot, user, chatId, userStatistics, getGlobalStatistics())
         if (wishUserFulfilling != null) {
             bot.sendMessage(chatId, getLocalisedMessage("you_fulfilling_a_wish", user.languageCode))
-            sendWishCard(bot, user, chatId, wishUserFulfilling)
+            sendWishCard(bot, chatId, wishUserFulfilling, setOf(user.languageCode))
         }
 
         val buttons = buildAnswerButtons(user, wishUserFulfilling != null, userStatistics.myWishesActive > 0)

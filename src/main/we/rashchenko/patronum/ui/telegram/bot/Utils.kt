@@ -30,12 +30,13 @@ fun askAndWaitForAnswer(
     }
 }
 
-fun Wish.formatToString(languageCode: String?): String {
-    return "*${title.text.replaceMarkdownSpecialSymbols()}*\n\n${description.text.replaceMarkdownSpecialSymbols()}\n\n${
-        searchInfo.formatToString(
-            languageCode
-        )
-    }"
+fun Wish.formatToStringMultiLanguage(languageCodes: Set<String?>): String {
+    return "*${
+        title.text.replaceMarkdownSpecialSymbols()}*\n\n${
+            description.text.replaceMarkdownSpecialSymbols()
+        }\n\n${
+                searchInfo.formatToStringMultiLanguage(languageCodes)
+        }"
 }
 
 fun String.replaceMarkdownSpecialSymbols(): String {
@@ -49,21 +50,25 @@ fun WishDraft.formatToString(languageCode: String?): String {
     val text = StringBuilder()
     title?.let { text.append("*${it.text.replaceMarkdownSpecialSymbols()}*\n\n") } ?: return text.toString()
     description?.let { text.append("${it.text.replaceMarkdownSpecialSymbols()}\n\n") } ?: return text.toString()
-    searchInfoDraft?.toSearchInfo()?.let { text.append(it.formatToString(languageCode)) } ?: return text.toString()
+    searchInfoDraft?.toSearchInfo()?.let { text.append(it.formatToStringMultiLanguage(setOf(languageCode))) } ?: return text.toString()
     return text.toString()
 }
 
-fun SearchInfo.formatToString(languageCode: String?): String {
-    return if (this.searchArea != null) {
-        "_${getLocalisedMessage("location_provided", languageCode).replaceMarkdownSpecialSymbols()}_"
-    } else {
-        "_${getLocalisedMessage("location_absent", languageCode).replaceMarkdownSpecialSymbols()}_"
+fun SearchInfo.formatToStringMultiLanguage(languageCodes: Set<String?>): String {
+    val text = StringBuilder()
+    languageCodes.ifEmpty { setOf(null) }.forEach {
+        if (this.searchArea != null) {
+            text.append("_${getLocalisedMessage("location_provided", it).replaceMarkdownSpecialSymbols()}_\n\n")
+        } else {
+            text.append("_${getLocalisedMessage("location_absent", it).replaceMarkdownSpecialSymbols()}_\n\n")
+        }
     }
+    return text.toString()
 }
 
-fun sendWishCard(bot: Bot, user: User, chatId: ChatId.Id, wish: Wish) {
+fun sendWishCard(bot: Bot, chatId: ChatId.Id, wish: Wish, languageCodes: Set<String?>) {
     bot.sendMessage(
-        chatId = chatId, text = wish.formatToString(user.languageCode), parseMode = ParseMode.MARKDOWN_V2
+        chatId = chatId, text = wish.formatToStringMultiLanguage(languageCodes), parseMode = ParseMode.MARKDOWN_V2
     )
 }
 
@@ -91,17 +96,11 @@ fun Bot.sendMessageMultiLanguage(
     messageName: String,
     warn: Boolean = true,
 ) {
-    if (setOfLanguages.size > 1 && warn) {
-        sendMessageMultiLanguage(chatId, setOfLanguages, "room_translator_required", false)
-    }
     setOfLanguages.ifEmpty { setOf(null) }.forEach {
         sendMessage(chatId, getLocalisedMessage(messageName, it))
     }
-}
-
-fun Bot.sendCardMultiLanguage(chatId: ChatId, setOfLanguages: Set<String>, wish: Wish) {
-    setOfLanguages.ifEmpty { setOf(null) }.forEach {
-        sendMessage(chatId, wish.formatToString(it))
+    if (setOfLanguages.size > 1 && warn) {
+        sendMessageMultiLanguage(chatId, setOfLanguages, "room_translator_required", false)
     }
 }
 

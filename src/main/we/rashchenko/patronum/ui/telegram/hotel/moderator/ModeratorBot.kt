@@ -6,8 +6,8 @@ import com.github.kotlintelegrambot.dispatcher.command
 import com.github.kotlintelegrambot.entities.ChatId
 import we.rashchenko.patronum.database.Database
 import we.rashchenko.patronum.database.stats.Report
-import we.rashchenko.patronum.ui.telegram.bot.sendCardMultiLanguage
 import we.rashchenko.patronum.ui.telegram.bot.sendMessageMultiLanguage
+import we.rashchenko.patronum.ui.telegram.bot.sendWishCard
 
 class ModeratorBot(private val database: Database) {
     fun build() = bot {
@@ -17,8 +17,9 @@ class ModeratorBot(private val database: Database) {
             command(ModeratorCommand.START.command) {
                 val chatId = message.chat.id
                 database.getRoomByTelegramId(chatId)?.also {
-                    bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_greetings")
-                    bot.sendCardMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), it.wish)
+                    bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_greetings", warn = true)
+                    bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_wish_intro", warn = false)
+                    sendWishCard(bot, ChatId.fromId(chatId), it.wish, it.getLanguageCodes())
                 } ?: bot.sendMessage(ChatId.fromId(chatId), "Unknown room")
             }
             command(ModeratorCommand.FINISH.command) {
@@ -26,16 +27,16 @@ class ModeratorBot(private val database: Database) {
                 val senderId = message.from!!.id
                 database.getRoomByTelegramId(chatId) ?. also{
                     if (it.closed) {
-                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_closed")
+                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_closed", warn = false)
                     } else {
                         if (senderId == it.wish.author.telegramId) {
                             bot.sendMessageMultiLanguage(
-                                ChatId.fromId(chatId), it.getLanguageCodes(), "room_finish_by_author"
+                                ChatId.fromId(chatId), it.getLanguageCodes(), "room_finish_by_author", warn = false
                             )
                             database.finishWish(it.wish)
                         } else {
                             bot.sendMessageMultiLanguage(
-                                ChatId.fromId(chatId), it.getLanguageCodes(), "room_finish_by_patron"
+                                ChatId.fromId(chatId), it.getLanguageCodes(), "room_finish_by_patron", warn = false
                             )
                         }
                     }
@@ -46,9 +47,9 @@ class ModeratorBot(private val database: Database) {
                 val senderId = message.from!!.id
                 database.getRoomByTelegramId(chatId) ?. also{
                     if (it.closed) {
-                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_closed")
+                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_closed", warn = false)
                     } else {
-                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_cancel")
+                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_cancel", warn = false)
                         if (senderId == it.wish.author.telegramId) {
                             database.cancelWishByAuthor(it.wish)
                         } else {
@@ -63,11 +64,11 @@ class ModeratorBot(private val database: Database) {
                 database.getRoomByTelegramId(chatId) ?.also{
                     if (!it.finished && !it.canceledByAuthor && !it.canceledByPatron) {
                         if (senderId == it.wish.author.telegramId && !it.reportedByAuthor) {
-                            bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_report")
+                            bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_report", warn = false)
                             val report = Report(database.generateNewReportId(), it.wish.author, it.wish.patron!!, "")
                             database.registerReport(report)
                         } else if (senderId == it.wish.patron!!.telegramId && !it.reportedByPatron) {
-                            bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_report")
+                            bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "room_report", warn = false)
                             val report = Report(database.generateNewReportId(), it.wish.patron!!, it.wish.author, "")
                             database.registerReport(report)
                         }

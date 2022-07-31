@@ -37,7 +37,7 @@ class RoomCodec(private val wishesDatabase: WishesDatabase) : CollectibleCodec<W
         val doc = documentCodec.decode(bsonReader, decoderContext)
         return WishRoom(
             id = (doc.getObjectId("_id")).toHexString(),
-            telegramChatId = doc.getString("telegramId").toLong(),
+            telegramChatId = doc.getLong("telegramId"),
             wish = wishesDatabase.get(doc.getObjectId("wishId").toHexString())!!,
         ).apply {
             doc.getList("languageCodes", String::class.java).forEach {

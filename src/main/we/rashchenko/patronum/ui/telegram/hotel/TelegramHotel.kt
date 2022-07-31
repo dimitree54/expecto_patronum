@@ -6,9 +6,11 @@ import it.tdlight.client.SimpleTelegramClient
 import it.tdlight.client.TDLibSettings
 import it.tdlight.common.Init
 import it.tdlight.jni.TdApi
+import we.rashchenko.patronum.errors.RoomOpenError
 
 class TelegramHotel(private val moderatorUserId: Long) {
     private val client: SimpleTelegramClient
+    private val retries = 5
 
     init {
         Init.start()
@@ -95,10 +97,13 @@ class TelegramHotel(private val moderatorUserId: Long) {
             }
             println("Created chat ${chat.id}")
         }
-        while (chatId == null) {
+        repeat(retries) {
+            if (chatId != null) {
+                return chatId!!
+            }
             println("Waiting for room to be opened...")
             Thread.sleep(1000)
         }
-        return chatId!!
+        throw RoomOpenError("Can not open error")
     }
 }

@@ -45,6 +45,7 @@ class MyWishesHandler(
         }
 
         val chosenIndex = askAndWaitForAnswer(message, sendRequestMessage = {
+            states[user.id] = State.WAIT_FOR_REACTION
             bot.sendMessage(chatId, summary)
             bot.sendMessage(
                 chatId, getLocalisedMessage("request_wish_number", user.languageCode),

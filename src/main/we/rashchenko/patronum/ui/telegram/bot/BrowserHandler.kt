@@ -10,7 +10,7 @@ import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 
 class BrowserHandler(
     private val externalCheckUpdate: (Long) -> Boolean,
-    private val onMatch: (Long, Wish) -> Unit,
+    private val onMatch: (Bot, ChatId.Id, Long, Wish) -> Unit,
     private val onSkip: (Long, Wish) -> Unit,
     private val onCancel: (Long) -> Unit,
 ) : Handler {
@@ -60,7 +60,7 @@ class BrowserHandler(
             bot.clearKeyboard(chatId, getLocalisedMessage("connect", user.languageCode))
             states.remove(user.id)
             ticketsQueue.remove(user.id)
-            onMatch(user.id, tickets.first())
+            onMatch(bot, chatId, user.id, tickets.first())
             return
         }
         else if ((state == State.WAIT_FOR_REACTION && message?.text == skipMessage)){
@@ -68,7 +68,7 @@ class BrowserHandler(
             tickets.removeFirst()
         }
 
-        sendWishCard(bot, user, chatId, tickets.first())
+        sendWishCard(bot, chatId, tickets.first(), setOf(user.languageCode))
         bot.sendMessage(chatId = chatId, text = getLocalisedMessage("accept_prompt", user.languageCode),
             replyMarkup = KeyboardReplyMarkup(
                 keyboard = listOf(
