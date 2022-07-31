@@ -27,25 +27,25 @@ class MenuHandler(
         val userStatistics = getUserStatistics(user.id)
         val wishUserFulfilling = getWishUserFulfilling(user.id)
 
-        sendGreetings(bot, user, chatId, userStatistics, getGlobalStatistics())
-        if (wishUserFulfilling != null) {
-            bot.sendMessage(chatId, getLocalisedMessage("you_fulfilling_a_wish", user.languageCode))
-            sendWishCard(bot, chatId, wishUserFulfilling, setOf(user.languageCode))
-        }
-
         val buttons = buildAnswerButtons(user, wishUserFulfilling != null, userStatistics.myWishesActive > 0)
 
-        bot.sendMessage(
-            chatId = chatId,
-            text = getLocalisedMessage("menu", user.languageCode),
-            replyMarkup = InlineKeyboardMarkup.create(buttons)
-        )
         update.callbackQuery?.let {
             when (it.data) {
                 "make_a_wish" -> onMakeWishPressed(user.id)
                 "do_good" -> onSearchPressed(user.id)
                 "cancel_fulfillment" -> onCancelFulfillmentPressed(user.id)
                 "my_wishes" -> onMyWishesPressed(user.id)
+            }
+        } ?: run{
+            bot.sendMessage(
+                chatId = chatId,
+                text = getLocalisedMessage("menu", user.languageCode),
+                replyMarkup = InlineKeyboardMarkup.create(buttons)
+            )
+            sendGreetings(bot, user, chatId, userStatistics, getGlobalStatistics())
+            if (wishUserFulfilling != null) {
+                bot.sendMessage(chatId, getLocalisedMessage("you_fulfilling_a_wish", user.languageCode))
+                sendWishCard(bot, chatId, wishUserFulfilling, setOf(user.languageCode))
             }
         }
     }
@@ -55,9 +55,6 @@ class MenuHandler(
             chatId = chatId, text = getLocalisedMessage("info", user.languageCode),
             parseMode = ParseMode.MARKDOWN,
             disableWebPagePreview = true
-        )
-        bot.sendMessage(
-            chatId = chatId, text = getLocalisedMessage("greetings", user.languageCode)
         )
         sendUserStatistics(bot, user, chatId, stats, globalStats)
     }
