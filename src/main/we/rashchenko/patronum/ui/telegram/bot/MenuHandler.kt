@@ -19,6 +19,11 @@ class MenuHandler(
     private val onCancelFulfillmentPressed: (Long) -> Unit,
     private val onMyWishesPressed: (Long) -> Unit,
 ) : Handler {
+
+    private enum class CallBackMessages(val value: String) {
+        MAKE_WISH("menu_make_wish"), DO_WISH("menu_do_good"), CANCEL_FULFILLMENT("cancel_fulfillment"), MY_WISHES("menu_my_wishes")
+    }
+
     override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it.id) } ?: false
 
     override fun handleUpdate(bot: Bot, update: Update) {
@@ -31,20 +36,20 @@ class MenuHandler(
 
         update.callbackQuery?.let {
             when (it.data) {
-                "make_a_wish" -> onMakeWishPressed(user.id)
-                "do_good" -> onSearchPressed(user.id)
-                "cancel_fulfillment" -> onCancelFulfillmentPressed(user.id)
-                "my_wishes" -> onMyWishesPressed(user.id)
+                CallBackMessages.MAKE_WISH.value -> onMakeWishPressed(user.id)
+                CallBackMessages.DO_WISH.value -> onSearchPressed(user.id)
+                CallBackMessages.CANCEL_FULFILLMENT.value -> onCancelFulfillmentPressed(user.id)
+                CallBackMessages.MY_WISHES.value -> onMyWishesPressed(user.id)
             }
         } ?: run{
             bot.sendMessage(
                 chatId = chatId,
-                text = getLocalisedMessage("menu", user.languageCode),
+                text = getLocalisedMessage("menu_title", user.languageCode),
                 replyMarkup = InlineKeyboardMarkup.create(buttons)
             )
             sendGreetings(bot, user, chatId, userStatistics, getGlobalStatistics())
             if (wishUserFulfilling != null) {
-                bot.sendMessage(chatId, getLocalisedMessage("you_fulfilling_a_wish", user.languageCode))
+                bot.sendMessage(chatId, getLocalisedMessage("menu_wish_taken", user.languageCode))
                 sendWishCard(bot, chatId, wishUserFulfilling, setOf(user.languageCode))
             }
         }
@@ -52,7 +57,7 @@ class MenuHandler(
 
     private fun sendGreetings(bot: Bot, user: User, chatId: ChatId.Id, stats: UserStats, globalStats: GlobalStats) {
         bot.sendMessage(
-            chatId = chatId, text = getLocalisedMessage("info", user.languageCode),
+            chatId = chatId, text = getLocalisedMessage("registration_info", user.languageCode),
             parseMode = ParseMode.MARKDOWN,
             disableWebPagePreview = true
         )
@@ -64,27 +69,27 @@ class MenuHandler(
     ): MutableList<InlineKeyboardButton.CallbackData> {
         val buttons = mutableListOf(
             InlineKeyboardButton.CallbackData(
-                text = getLocalisedMessage("make_a_wish", user.languageCode), callbackData = "make_a_wish"
+                text = getLocalisedMessage("menu_make_wish", user.languageCode), callbackData = CallBackMessages.MAKE_WISH.value
             )
         )
         if (isUserFulfilling) {
             buttons.add(
                 InlineKeyboardButton.CallbackData(
-                    text = getLocalisedMessage("cancel_fulfillment", user.languageCode),
-                    callbackData = "cancel_fulfillment"
+                    text = getLocalisedMessage("menu_cancel_fulfillment", user.languageCode),
+                    callbackData = CallBackMessages.CANCEL_FULFILLMENT.value
                 ),
             )
         } else {
             buttons.add(
                 InlineKeyboardButton.CallbackData(
-                    text = getLocalisedMessage("do_good", user.languageCode), callbackData = "do_good"
+                    text = getLocalisedMessage("menu_do_good", user.languageCode), callbackData = CallBackMessages.DO_WISH.value
                 )
             )
         }
         if (isUserHaveWishes) {
             buttons.add(
                 InlineKeyboardButton.CallbackData(
-                    text = getLocalisedMessage("my_wishes", user.languageCode), callbackData = "my_wishes"
+                    text = getLocalisedMessage("menu_my_wishes", user.languageCode), callbackData = CallBackMessages.MY_WISHES.value
                 )
             )
         }

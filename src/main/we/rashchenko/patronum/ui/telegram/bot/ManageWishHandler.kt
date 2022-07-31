@@ -32,10 +32,10 @@ class ManageWishHandler(
         val message = update.message
         val state = states.getOrPut(user.id) { State.SEND_CARD }
 
-        val deleteMessage = getLocalisedMessage("delete_wish", user.languageCode)
+        val deleteMessage = getLocalisedMessage("manage_wish_withdraw", user.languageCode)
         val deleteButton = KeyboardButton(deleteMessage)
 
-        val cancelMessage = getLocalisedMessage("cancel", user.languageCode)
+        val cancelMessage = getLocalisedMessage("manage_wish_cancel", user.languageCode)
         val cancelButton = KeyboardButton(cancelMessage)
 
         if (state == State.WAIT_FOR_REACTION && message?.text == cancelMessage) {
@@ -51,7 +51,7 @@ class ManageWishHandler(
             sendWishCard(bot, chatId, userWishes[user.id]!!, setOf(user.languageCode))
             bot.sendMessage(
                 chatId,
-                getLocalisedMessage("request_wish_delete", user.languageCode),
+                getLocalisedMessage("manage_wish_delete", user.languageCode),
                 replyMarkup = KeyboardReplyMarkup(
                     keyboard = listOf(
                         listOf(deleteButton),
@@ -60,7 +60,7 @@ class ManageWishHandler(
                 )
             )
         }, checkValidText = {state == State.WAIT_FOR_REACTION && it?.text == deleteMessage})?: return
-        bot.clearKeyboard(chatId, getLocalisedMessage("remove_my_wish", user.languageCode))
+        bot.clearKeyboard(chatId, getLocalisedMessage("manage_wish_remove", user.languageCode))
         onWishDelete(user.id, userWishes[user.id]!!)
         userWishes.remove(user.id)
         states.remove(user.id)

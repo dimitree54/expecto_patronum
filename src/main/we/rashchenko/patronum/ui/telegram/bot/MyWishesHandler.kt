@@ -34,7 +34,7 @@ class MyWishesHandler(
             "$index: ${wish.title.text}"
         }.joinToString("\n")
 
-        val cancelMessage = getLocalisedMessage("cancel", user.languageCode)
+        val cancelMessage = getLocalisedMessage("my_wishes_cancel", user.languageCode)
         val cancelButton = KeyboardButton(cancelMessage)
 
         if (state == State.WAIT_FOR_REACTION && message?.text == cancelMessage) {
@@ -48,7 +48,7 @@ class MyWishesHandler(
             states[user.id] = State.WAIT_FOR_REACTION
             bot.sendMessage(chatId, summary)
             bot.sendMessage(
-                chatId, getLocalisedMessage("request_wish_number", user.languageCode),
+                chatId, getLocalisedMessage("my_wishes_request_number", user.languageCode),
                 replyMarkup = KeyboardReplyMarkup(listOf(listOf(cancelButton)))
             )
         }, checkValidText = {

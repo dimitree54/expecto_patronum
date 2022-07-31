@@ -26,7 +26,7 @@ class SearchHandler(
         val chatId = getChatId(update) ?: return
         val message = update.message
 
-        val cancelMessage = getLocalisedMessage("cancel", user.languageCode)
+        val cancelMessage = getLocalisedMessage("search_cancel", user.languageCode)
         val cancelButton = KeyboardButton(cancelMessage)
         if (message?.text == cancelMessage) {
             cleanup(bot, chatId, user, cancelMessage)
@@ -43,14 +43,14 @@ class SearchHandler(
 
                 MakeARequestState.ASK_FOR_RADIUS, MakeARequestState.WAIT_FOR_RADIUS -> {
                     if (isRadiusStageDone(bot, requestDraft, message, user, chatId, cancelButton)) {
-                        cleanup(bot, chatId, user, getLocalisedMessage("searching", user.languageCode))
+                        cleanup(bot, chatId, user, getLocalisedMessage("search_in_progress", user.languageCode))
                         onSearchRequestCreated(user.id, requestDraft)
                         return
                     } else break
                 }
 
                 MakeARequestState.SKIP_LOCATION -> {
-                    cleanup(bot, chatId, user, getLocalisedMessage("searching", user.languageCode))
+                    cleanup(bot, chatId, user, getLocalisedMessage("search_in_progress", user.languageCode))
                     onSearchRequestCreated(user.id, requestDraft)
                     return
                 }
@@ -84,10 +84,10 @@ class SearchHandler(
         skipButton: KeyboardButton,
     ) {
         val shareLocationButton =
-            KeyboardButton(getLocalisedMessage("location_share", user.languageCode), requestLocation = true)
+            KeyboardButton(getLocalisedMessage("make_wish_location_share", user.languageCode), requestLocation = true)
         bot.sendMessage(
             chatId = chatId,
-            text = getLocalisedMessage("request_location", user.languageCode),
+            text = getLocalisedMessage("make_wish_request_location", user.languageCode),
             replyMarkup = KeyboardReplyMarkup(
                 listOf(listOf(shareLocationButton, skipButton, cancelButton)),
                 resizeKeyboard = true
@@ -98,7 +98,7 @@ class SearchHandler(
     private fun requestRadius(bot: Bot, user: User, chatId: ChatId.Id, cancelButton: KeyboardButton) {
         bot.sendMessage(
             chatId = chatId,
-            text = getLocalisedMessage("request_radius", user.languageCode),
+            text = getLocalisedMessage("make_wish_request_radius", user.languageCode),
             replyMarkup = KeyboardReplyMarkup(listOf(listOf(cancelButton)), resizeKeyboard = true)
         )
     }
@@ -111,7 +111,7 @@ class SearchHandler(
         chatId: ChatId.Id,
         cancelButton: KeyboardButton,
     ): Boolean {
-        val skipMessage = getLocalisedMessage("skip", user.languageCode)
+        val skipMessage = getLocalisedMessage("search_location_skip", user.languageCode)
         val skipButton = KeyboardButton(skipMessage)
         val answer = askAndWaitForAnswer(
             message,
@@ -143,7 +143,7 @@ class SearchHandler(
             checkValidText = ::checkValidRadius
         )?.text ?: return false
         requestDraft.radius = radius.toFloat()
-        bot.sendMessage(chatId, getLocalisedMessage("request_confirmation_search_done", user.languageCode))
+        bot.sendMessage(chatId, getLocalisedMessage("search_start", user.languageCode))
         return true
     }
 }

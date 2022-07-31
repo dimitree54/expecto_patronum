@@ -36,15 +36,15 @@ class BrowserHandler(
         val tickets = ticketsQueue[user.id]
         val state = states.getOrPut(user.id) { State.SEND_FIRST_CARD }
 
-        val cancelMessage = getLocalisedMessage("cancel", user.languageCode)
-        val acceptMessage = getLocalisedMessage("accept", user.languageCode)
-        val skipMessage = getLocalisedMessage("skip", user.languageCode)
+        val cancelMessage = getLocalisedMessage("browser_cancel", user.languageCode)
+        val acceptMessage = getLocalisedMessage("browser_wish_accept_answer", user.languageCode)
+        val skipMessage = getLocalisedMessage("browser_wish_skip", user.languageCode)
         val cancelButton = KeyboardButton(cancelMessage)
         val acceptButton = KeyboardButton(acceptMessage)
         val skipButton = KeyboardButton(skipMessage)
 
         if (tickets.isNullOrEmpty()){
-            bot.clearKeyboard(chatId, getLocalisedMessage("no_results", user.languageCode))
+            bot.clearKeyboard(chatId, getLocalisedMessage("browser_no_results", user.languageCode))
             states.remove(user.id)
             ticketsQueue.remove(user.id)
             onCancel(user.id)
@@ -57,7 +57,7 @@ class BrowserHandler(
             return
         }
         else if ((state == State.WAIT_FOR_REACTION && message?.text == acceptMessage)){
-            bot.clearKeyboard(chatId, getLocalisedMessage("connect", user.languageCode))
+            bot.clearKeyboard(chatId, getLocalisedMessage("browser_connect", user.languageCode))
             states.remove(user.id)
             ticketsQueue.remove(user.id)
             onMatch(bot, chatId, user.id, tickets.first())
@@ -69,7 +69,7 @@ class BrowserHandler(
         }
 
         sendWishCard(bot, chatId, tickets.first(), setOf(user.languageCode))
-        bot.sendMessage(chatId = chatId, text = getLocalisedMessage("accept_prompt", user.languageCode),
+        bot.sendMessage(chatId = chatId, text = getLocalisedMessage("browser_wish_accept_prompt", user.languageCode),
             replyMarkup = KeyboardReplyMarkup(
                 keyboard = listOf(
                     listOf(acceptButton, skipButton),

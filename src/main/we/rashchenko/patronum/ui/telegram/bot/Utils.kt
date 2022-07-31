@@ -58,9 +58,9 @@ fun SearchInfo.formatToStringMultiLanguage(languageCodes: Set<String?>): String 
     val text = StringBuilder()
     languageCodes.ifEmpty { setOf(null) }.forEach {
         if (this.searchArea != null) {
-            text.append("_${getLocalisedMessage("location_provided", it).replaceMarkdownSpecialSymbols()}_\n\n")
+            text.append("_${getLocalisedMessage("browser_location_provided", it).replaceMarkdownSpecialSymbols()}_\n\n")
         } else {
-            text.append("_${getLocalisedMessage("location_absent", it).replaceMarkdownSpecialSymbols()}_\n\n")
+            text.append("_${getLocalisedMessage("browser_location_absent", it).replaceMarkdownSpecialSymbols()}_\n\n")
         }
     }
     return text.toString()
@@ -80,7 +80,7 @@ fun sendWishDraftCard(bot: Bot, user: User, chatId: ChatId.Id, wishDraft: WishDr
 
 fun sendUserStatistics(bot: Bot, user: User, chatId: ChatId.Id, stats: UserStats, globalStats: GlobalStats) {
     bot.sendMessage(
-        chatId = chatId, text = getLocalisedMessage("user_statistics_format", user.languageCode).format(
+        chatId = chatId, text = getLocalisedMessage("menu_stats", user.languageCode).format(
             stats.myWishesActive,
             stats.myWishesDone,
             stats.othersWishesDone,
@@ -100,7 +100,7 @@ fun Bot.sendMessageMultiLanguage(
         sendMessage(chatId, getLocalisedMessage(messageName, it))
     }
     if (setOfLanguages.size > 1 && warn) {
-        sendMessageMultiLanguage(chatId, setOfLanguages, "room_translator_required", false)
+        sendMessageMultiLanguage(chatId, setOfLanguages, "hotel_warning_multilanguage", false)
     }
 }
 
