@@ -57,11 +57,6 @@ class MenuHandler(
     }
 
     private fun sendGreetings(bot: Bot, user: User, chatId: ChatId.Id, stats: UserStats, globalStats: GlobalStats) {
-        bot.sendMessage(
-            chatId = chatId, text = getLocalisedMessage("registration_info", user.languageCode),
-            parseMode = ParseMode.MARKDOWN,
-            disableWebPagePreview = true
-        )
         sendUserStatistics(bot, user, chatId, stats, globalStats)
     }
 

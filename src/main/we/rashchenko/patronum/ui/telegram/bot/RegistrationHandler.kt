@@ -22,11 +22,13 @@ class RegistrationHandler(
             val chatId = ChatId.fromId(it.chat.id)
             val languageCode = it.from?.languageCode
             if (it.text == "/start") {
-                bot.sendMessage(
+                val result = bot.sendMessage(
                     chatId = chatId, text = getLocalisedMessage("registration_info", languageCode),
                     parseMode = ParseMode.MARKDOWN,
                     disableWebPagePreview = true
                 )
+                bot.unpinAllChatMessages(chatId)
+                bot.pinChatMessage(chatId, result.get().messageId)
                 bot.sendMessage(
                     chatId = chatId,
                     text = getLocalisedMessage("registration_license_intro", languageCode),
