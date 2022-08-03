@@ -40,18 +40,19 @@ class MenuHandler(
                 CallBackMessages.DO_WISH.value -> onSearchPressed(user.id)
                 CallBackMessages.CANCEL_FULFILLMENT.value -> onCancelFulfillmentPressed(user.id)
                 CallBackMessages.MY_WISHES.value -> onMyWishesPressed(user.id)
+                else -> null
             }
         } ?: run{
-            bot.sendMessage(
-                chatId = chatId,
-                text = getLocalisedMessage("menu_title", user.languageCode),
-                replyMarkup = InlineKeyboardMarkup.create(buttons)
-            )
             sendGreetings(bot, user, chatId, userStatistics, getGlobalStatistics())
             if (wishUserFulfilling != null) {
                 bot.sendMessage(chatId, getLocalisedMessage("menu_wish_taken", user.languageCode))
                 sendWishCard(bot, chatId, wishUserFulfilling, setOf(user.languageCode))
             }
+            bot.sendMessage(
+                chatId = chatId,
+                text = getLocalisedMessage("menu_title", user.languageCode),
+                replyMarkup = InlineKeyboardMarkup.create(buttons)
+            )
         }
     }
 
