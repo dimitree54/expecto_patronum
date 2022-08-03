@@ -25,14 +25,15 @@ class Circle(private val center: Location, private val radiusInMeters: Float) {
         val jiggledCenter = jiggleCenter(jiggleRate)
         val jiggleRadiusMeters = jiggleRate * radiusInMeters
         val random = Random()
+        val vertices = List(pointsPerCircle) { i ->
+            val jiggledRadius = jiggleRadiusMeters * random.nextFloat()
+            val angle = (i * 2 * Math.PI / pointsPerCircle).toFloat()
+            val dx = jiggledRadius * cos(angle)
+            val dy = jiggledRadius * sin(angle)
+            addXYToLocation(jiggledCenter, dx, dy)
+        }
         return Polygon(
-            List(pointsPerCircle + 1) { i ->
-                val jiggledRadius = jiggleRadiusMeters * random.nextFloat()
-                val angle = ((i % pointsPerCircle) * 2 * Math.PI / pointsPerCircle).toFloat()
-                val dx = jiggledRadius * cos(angle)
-                val dy = jiggledRadius * sin(angle)
-                addXYToLocation(jiggledCenter, dx, dy)
-            }
+            vertices + listOf(vertices[0])
         )
     }
 }
