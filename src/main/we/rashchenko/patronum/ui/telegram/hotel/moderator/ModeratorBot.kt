@@ -19,61 +19,108 @@ class ModeratorBot(private val database: Database) {
                 database.getRoomByTelegramId(chatId)?.also {
                     bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "hotel_greetings", warn = true)
                     bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "hotel_wish_intro", warn = false)
-                    sendWishCard(bot, ChatId.fromId(chatId), it.wish, it.getLanguageCodes())
+                    sendWishCard(bot, ChatId.fromId(chatId), it.wish!!, it.getLanguageCodes())
                 } ?: bot.sendMessage(ChatId.fromId(chatId), "Unknown room")
             }
             command(ModeratorCommand.FINISH.command) {
                 val chatId = message.chat.id
                 val senderId = message.from!!.id
-                database.getRoomByTelegramId(chatId) ?. also{
-                    if (it.closed) {
-                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "hotel_room_closed", warn = false)
-                    } else {
-                        if (senderId == it.wish.author.telegramId) {
-                            bot.sendMessageMultiLanguage(
-                                ChatId.fromId(chatId), it.getLanguageCodes(), "hotel_wish_finish_by_author", warn = false
-                            )
-                            database.finishWish(it.wish)
-                        } else {
-                            bot.sendMessageMultiLanguage(
-                                ChatId.fromId(chatId), it.getLanguageCodes(), "hotel_wish_finish_by_patron", warn = false
-                            )
-                        }
+                val room = database.getRoomByTelegramId(chatId)
+                if (room == null){
+                    bot.sendMessageMultiLanguage(
+                        ChatId.fromId(chatId), setOf(), "hotel_room_unknown", warn = false
+                    )
+                }
+                else if (room.closed) {
+                    bot.sendMessageMultiLanguage(ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_room_closed", warn = false)
+                } else {
+                    val wish = room.wish
+                    if (wish == null){
+                        bot.sendMessageMultiLanguage(
+                            ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_wish_unknown", warn = false
+                        )
                     }
-                } ?: bot.sendMessage(ChatId.fromId(chatId), "Unknown room")
+                    else if (senderId == wish.author.telegramId) {
+                        bot.sendMessageMultiLanguage(
+                            ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_wish_finish_by_author", warn = false
+                        )
+                        room.finished = true
+                        database.updateRoom(room)
+                        database.finishWish(wish)
+                    } else {
+                        bot.sendMessageMultiLanguage(
+                            ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_wish_finish_by_patron", warn = false
+                        )
+                    }
+                }
             }
             command(ModeratorCommand.CANCEL.command) {
                 val chatId = this.message.chat.id
                 val senderId = message.from!!.id
-                database.getRoomByTelegramId(chatId) ?. also{
-                    if (it.closed) {
-                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "hotel_room_closed", warn = false)
-                    } else {
-                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "hotel_wish_cancel", warn = false)
-                        if (senderId == it.wish.author.telegramId) {
-                            database.cancelWishByAuthor(it.wish)
-                        } else {
-                            database.cancelWishByPatron(it.wish)
-                        }
+                val room = database.getRoomByTelegramId(chatId)
+                if (room == null){
+                    bot.sendMessageMultiLanguage(
+                        ChatId.fromId(chatId), setOf(), "hotel_room_unknown", warn = false
+                    )
+                }
+                else if (room.closed) {
+                    bot.sendMessageMultiLanguage(ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_room_closed", warn = false)
+                } else {
+                    val wish = room.wish
+                    if (wish == null){
+                        bot.sendMessageMultiLanguage(
+                            ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_wish_unknown", warn = false
+                        )
                     }
-                } ?: bot.sendMessage(ChatId.fromId(chatId), "Unknown room")
+                    else{
+                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_wish_cancel", warn = false)
+                        if (senderId == wish.author.telegramId) {
+                            room.canceledByAuthor = true
+                            database.cancelWishByAuthor(wish)
+                        } else {
+                            room.canceledByPatron = true
+                            database.cancelWishByPatron(wish)
+                        }
+                        database.updateRoom(room)
+                    }
+                }
             }
             command(ModeratorCommand.REPORT.command) {
                 val chatId = this.message.chat.id
                 val senderId = message.from!!.id
-                database.getRoomByTelegramId(chatId) ?.also{
-                    if (!it.finished && !it.canceledByAuthor && !it.canceledByPatron) {
-                        if (senderId == it.wish.author.telegramId && !it.reportedByAuthor) {
-                            bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "hotel_report", warn = false)
-                            val report = Report(database.generateNewReportId(), it.wish.author, it.wish.patron!!, "")
-                            database.registerReport(report)
-                        } else if (senderId == it.wish.patron!!.telegramId && !it.reportedByPatron) {
-                            bot.sendMessageMultiLanguage(ChatId.fromId(chatId), it.getLanguageCodes(), "hotel_report", warn = false)
-                            val report = Report(database.generateNewReportId(), it.wish.patron!!, it.wish.author, "")
-                            database.registerReport(report)
-                        }
+                val room = database.getRoomByTelegramId(chatId)
+                if (room == null){
+                    bot.sendMessageMultiLanguage(
+                        ChatId.fromId(chatId), setOf(), "hotel_room_unknown", warn = false
+                    )
+                }
+                else if (!room.finished && !room.canceledByAuthor && !room.canceledByPatron) {
+                    val wish = room.wish
+                    if (wish == null){
+                        bot.sendMessageMultiLanguage(
+                            ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_wish_unknown", warn = false
+                        )
                     }
-                } ?: bot.sendMessage(ChatId.fromId(chatId), "Unknown room")
+                    else if (senderId == wish.author.telegramId && !room.reportedByAuthor) {
+                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_report", warn = false)
+                        val report = Report(database.generateNewReportId(), wish.author, wish.patron!!, "")
+                        database.registerReport(report)
+                        room.reportedByAuthor = true
+                        database.updateRoom(room)
+                    } else if (senderId == wish.patron!!.telegramId && !room.reportedByPatron) {
+                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_report", warn = false)
+                        val report = Report(database.generateNewReportId(), wish.patron!!, wish.author, "")
+                        database.registerReport(report)
+                        room.reportedByPatron = true
+                        database.updateRoom(room)
+                    }
+                    else{
+                        bot.sendMessageMultiLanguage(ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_report_again", warn = false)
+                    }
+                }
+                else{
+                    bot.sendMessageMultiLanguage(ChatId.fromId(chatId), room.getLanguageCodes(), "hotel_room_closed", warn = false)
+                }
             }
         }
     }

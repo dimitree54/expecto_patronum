@@ -23,11 +23,14 @@ class MongoSearchEngine(
         }
         pipeline.add(Aggregates.match(Filters.not(Filters.exists("patronId"))))
         pipeline.add(Aggregates.match(Filters.nin("_id", patron.wishIdBlackList.map{ ObjectId(it) })))
+        pipeline.add(Aggregates.match(Filters.eq("closed", false)))
         pipeline.add(Aggregates.lookup("users", "authorId", "_id", "author"))
         pipeline.add(Aggregates.match(Filters.nin("author._id", patron.authorIdBlackList.map{ ObjectId(it) })))
         pipeline.add(Aggregates.match(Filters.not(Filters.eq("author._id", ObjectId(patron.id)))))
         pipeline.add(Aggregates.sort(Sorts.descending("author.reputation")))
 
-        return wishesCollection.aggregate(pipeline)
+        return wishesCollection.aggregate(pipeline).filter { wish ->
+            patron.id !in wish.author.authorIdBlackList
+        }
     }
 }

@@ -5,7 +5,7 @@ import we.rashchenko.patronum.wishes.Wish
 class WishRoom(
     val id: String,
     val telegramChatId: Long,
-    val wish: Wish
+    val wish: Wish?
 ) {
     private var languageCodes = mutableSetOf<String>()
     var finished = false

@@ -21,7 +21,7 @@ class RoomCodec(private val wishesDatabase: WishesDatabase) : CollectibleCodec<W
         val doc = Document()
         doc["_id"] = ObjectId(room.id)
         doc["telegramId"] = room.telegramChatId
-        doc["wishId"] = ObjectId(room.wish.id)
+        room.wish ?.let { doc["wishId"] = it.id }
         doc["languageCodes"] = room.getLanguageCodes().toList()
         doc["finished"] = room.finished
         doc["canceledByAuthor"] = room.canceledByAuthor
@@ -38,7 +38,7 @@ class RoomCodec(private val wishesDatabase: WishesDatabase) : CollectibleCodec<W
         return WishRoom(
             id = (doc.getObjectId("_id")).toHexString(),
             telegramChatId = doc.getLong("telegramId"),
-            wish = wishesDatabase.get(doc.getObjectId("wishId").toHexString())!!,
+            wish = wishesDatabase.get(doc.getObjectId("wishId").toHexString()),
         ).apply {
             doc.getList("languageCodes", String::class.java).forEach {
                 addLanguageCode(it)

@@ -35,6 +35,7 @@ class WishCodec(private val usersDatabase: UsersDatabase) : CollectibleCodec<Wis
         doc["bounty"] = wish.bounty
         doc["creationDate"] = Date.from(wish.creationDate)
         doc["expirationDate"] = Date.from(wish.expirationDate)
+        doc["closed"] = wish.closed
 
         wish.searchInfo.searchArea?.let {polygon ->
             doc["search_polygon"] = polygon.toMongo()
@@ -62,6 +63,7 @@ class WishCodec(private val usersDatabase: UsersDatabase) : CollectibleCodec<Wis
             expirationDate = doc.getDate("expirationDate").toInstant(),
             searchInfo = parseSearchInfo(doc),
             patron = doc.getObjectId("patronId")?.let { usersDatabase.get(it.toHexString()) },
+            closed = doc.getBoolean("closed")
         )
     }
 

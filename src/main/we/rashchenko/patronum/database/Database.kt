@@ -67,6 +67,7 @@ class Database(
     fun search(patron: PatronUser, query: SearchInfo) = searchEngine.search(patron, query)
 
     fun getRoomByTelegramId(telegramId: Long) = rooms.getByTelegramId(telegramId)
+    fun updateRoom(room: WishRoom) = rooms.update(room)
     fun openWishRoom(wishRoom: WishRoom) = rooms.new(wishRoom)
 
     fun generateNewUserId() = users.generateNewUserId()

@@ -13,7 +13,8 @@ class Wish(
     val description: Description,
     val searchInfo: SearchInfo,
     val creationDate: Instant,
-    val expirationDate: Instant,
+    var expirationDate: Instant,
     var patron: PatronUser? = null,
     var bounty: Float = 0f,
+    var closed: Boolean = false
 )
