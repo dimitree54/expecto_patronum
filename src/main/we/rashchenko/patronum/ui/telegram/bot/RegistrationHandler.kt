@@ -29,10 +29,16 @@ class RegistrationHandler(
                 )
                 bot.sendMessage(
                     chatId = chatId,
-                    text = getLocalisedMessage("registration_license", languageCode),
-                    parseMode = ParseMode.MARKDOWN,
+                    text = getLocalisedMessage("registration_license_intro", languageCode),
                     disableWebPagePreview = true
                 )
+                for (i in 1..6){
+                    bot.sendMessage(
+                        chatId = chatId,
+                        text = getLocalisedMessage("registration_license_$i", languageCode),
+                        disableWebPagePreview = true
+                    )
+                }
                 bot.sendMessage(
                     chatId = chatId,
                     text = getLocalisedMessage("registration_accept_prompt", languageCode),
