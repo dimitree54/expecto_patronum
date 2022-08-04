@@ -7,7 +7,6 @@ import org.bson.BsonWriter
 import org.bson.Document
 import org.bson.codecs.*
 import org.bson.types.ObjectId
-import we.rashchenko.patronum.database.UsersDatabase
 import we.rashchenko.patronum.database.mongo.toMongo
 import we.rashchenko.patronum.search.SearchInfo
 import we.rashchenko.patronum.search.geo.Location
@@ -17,7 +16,7 @@ import we.rashchenko.patronum.wishes.strings.Description
 import we.rashchenko.patronum.wishes.strings.Title
 import java.util.*
 
-class WishCodec(private val usersDatabase: UsersDatabase) : CollectibleCodec<Wish> {
+class WishCodec : CollectibleCodec<Wish> {
     private val documentCodec: Codec<Document>
 
     init {
@@ -29,7 +28,7 @@ class WishCodec(private val usersDatabase: UsersDatabase) : CollectibleCodec<Wis
     ) {
         val doc = Document()
         doc["_id"] = ObjectId(wish.id)
-        doc["authorId"] = ObjectId(wish.author.id)
+        doc["authorId"] = ObjectId(wish.authorId)
         doc["title"] = wish.title.text
         doc["description"] = wish.description.text
         doc["bounty"] = wish.bounty
@@ -46,7 +45,7 @@ class WishCodec(private val usersDatabase: UsersDatabase) : CollectibleCodec<Wis
                 it.longitude
             }
         }
-        wish.patron?.let { doc["patronId"] = ObjectId(it.id) }
+        wish.patronId?.let { doc["patronId"] = ObjectId(it) }
 
         documentCodec.encode(bsonWriter, doc, encoderContext)
     }
@@ -55,14 +54,14 @@ class WishCodec(private val usersDatabase: UsersDatabase) : CollectibleCodec<Wis
         val doc = documentCodec.decode(bsonReader, decoderContext)!!
         return Wish(
             id = doc.getObjectId("_id").toHexString(),
-            author = usersDatabase.get(doc.getObjectId("authorId").toHexString())!!,
+            authorId = doc.getObjectId("authorId").toHexString(),
             title = Title(doc.getString("title")),
             description = Description(doc.getString("description")),
             bounty = doc.getDouble("bounty").toFloat(),
             creationDate = doc.getDate("creationDate").toInstant(),
             expirationDate = doc.getDate("expirationDate").toInstant(),
             searchInfo = parseSearchInfo(doc),
-            patron = doc.getObjectId("patronId")?.let { usersDatabase.get(it.toHexString()) },
+            patronId = doc.getObjectId("patronId")?.toHexString(),
             closed = doc.getBoolean("closed")
         )
     }

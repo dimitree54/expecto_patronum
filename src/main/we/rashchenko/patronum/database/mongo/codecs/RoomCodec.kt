@@ -9,10 +9,9 @@ import org.bson.codecs.DecoderContext
 import org.bson.codecs.DocumentCodec
 import org.bson.codecs.EncoderContext
 import org.bson.types.ObjectId
-import we.rashchenko.patronum.database.WishesDatabase
 import we.rashchenko.patronum.hotel.WishRoom
 
-class RoomCodec(private val wishesDatabase: WishesDatabase) : CollectibleCodec<WishRoom> {
+class RoomCodec : CollectibleCodec<WishRoom> {
     private val documentCodec = DocumentCodec()
 
     override fun encode(
@@ -21,7 +20,7 @@ class RoomCodec(private val wishesDatabase: WishesDatabase) : CollectibleCodec<W
         val doc = Document()
         doc["_id"] = ObjectId(room.id)
         doc["telegramId"] = room.telegramChatId
-        room.wish ?.let { doc["wishId"] = it.id }
+        doc["wishId"] = room.wishId
         doc["languageCodes"] = room.getLanguageCodes().toList()
         doc["finished"] = room.finished
         doc["canceledByAuthor"] = room.canceledByAuthor
@@ -38,7 +37,7 @@ class RoomCodec(private val wishesDatabase: WishesDatabase) : CollectibleCodec<W
         return WishRoom(
             id = (doc.getObjectId("_id")).toHexString(),
             telegramChatId = doc.getLong("telegramId"),
-            wish = wishesDatabase.get(doc.getObjectId("wishId").toHexString()),
+            wishId = doc.getObjectId("wishId").toHexString(),
         ).apply {
             doc.getList("languageCodes", String::class.java).forEach {
                 addLanguageCode(it)

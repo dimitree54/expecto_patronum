@@ -44,20 +44,19 @@ class MongoDatabaseBuilder {
             ).getDatabase(it["database"] as String)
         }
 
-        usersDatabase = MongoUsersDatabase(
-            database.getCollection("users", PatronUser::class.java).withCodecRegistry(
-                CodecRegistries.fromRegistries(
-                    getDefaultCodecRegistry(), fromCodecs(PatronUserCodec())
-                )
+        val usersCollection = database.getCollection("users", PatronUser::class.java).withCodecRegistry(
+            CodecRegistries.fromRegistries(
+                getDefaultCodecRegistry(), fromCodecs(PatronUserCodec())
             )
         )
+        usersDatabase = MongoUsersDatabase(usersCollection)
         val wishesCollection = database.getCollection("wishes", Wish::class.java).withCodecRegistry(
             CodecRegistries.fromRegistries(
-                getDefaultCodecRegistry(), fromCodecs(WishCodec(usersDatabase))
+                getDefaultCodecRegistry(), fromCodecs(WishCodec())
             )
         )
         wishesDatabase = MongoWishesDatabase(wishesCollection)
-        searchEngine = MongoSearchEngine(wishesCollection)
+        searchEngine = MongoSearchEngine(wishesCollection, usersCollection)
 
         reportsDatabase = MongoReportsDatabase(
             database.getCollection("reports", Report::class.java).withCodecRegistry(
@@ -69,7 +68,7 @@ class MongoDatabaseBuilder {
         roomsDatabase = MongoRoomsDatabase(
             database.getCollection("rooms", WishRoom::class.java).withCodecRegistry(
                 CodecRegistries.fromRegistries(
-                    getDefaultCodecRegistry(), fromCodecs(RoomCodec(wishesDatabase))
+                    getDefaultCodecRegistry(), fromCodecs(RoomCodec())
                 )
             )
         )

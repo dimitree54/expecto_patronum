@@ -8,11 +8,12 @@ import org.bson.conversions.Bson
 import org.bson.types.ObjectId
 import we.rashchenko.patronum.database.PatronUser
 import we.rashchenko.patronum.database.SearchEngine
+import we.rashchenko.patronum.errors.UserNotExistError
 import we.rashchenko.patronum.search.SearchInfo
 import we.rashchenko.patronum.wishes.Wish
 
 class MongoSearchEngine(
-    private val wishesCollection: MongoCollection<Wish>
+    private val wishesCollection: MongoCollection<Wish>, private val usersCollection: MongoCollection<PatronUser>
 ) : SearchEngine {
     override fun search(patron: PatronUser, query: SearchInfo): Iterable<Wish> {
         val pipeline = mutableListOf<Bson>()
@@ -22,15 +23,16 @@ class MongoSearchEngine(
             pipeline.add(Aggregates.match(Filters.not(Filters.exists("search.polygon"))))
         }
         pipeline.add(Aggregates.match(Filters.not(Filters.exists("patronId"))))
-        pipeline.add(Aggregates.match(Filters.nin("_id", patron.wishIdBlackList.map{ ObjectId(it) })))
+        pipeline.add(Aggregates.match(Filters.nin("_id", patron.wishIdStopList.map{ ObjectId(it) })))
         pipeline.add(Aggregates.match(Filters.eq("closed", false)))
         pipeline.add(Aggregates.lookup("users", "authorId", "_id", "author"))
-        pipeline.add(Aggregates.match(Filters.nin("author._id", patron.authorIdBlackList.map{ ObjectId(it) })))
+        pipeline.add(Aggregates.match(Filters.nin("author._id", patron.userIdStopList.map{ ObjectId(it) })))
         pipeline.add(Aggregates.match(Filters.not(Filters.eq("author._id", ObjectId(patron.id)))))
         pipeline.add(Aggregates.sort(Sorts.descending("author.reputation")))
 
         return wishesCollection.aggregate(pipeline).filter { wish ->
-            patron.id !in wish.author.authorIdBlackList
+            val author = usersCollection.find(Filters.eq("_id", wish.authorId)).firstOrNull() ?: throw UserNotExistError()
+            patron.id !in author.userIdStopList
         }
     }
 }

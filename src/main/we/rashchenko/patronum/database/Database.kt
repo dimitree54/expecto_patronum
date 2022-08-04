@@ -50,8 +50,8 @@ class Database(
         reports.new(report)
         report.receiver.stats.receiveReport()
         report.sender.stats.sendReport()
-        report.sender.authorIdBlackList.add(report.receiver.id)
-        report.receiver.authorIdBlackList.add(report.sender.id)
+        report.sender.userIdStopList.add(report.receiver.id)
+        report.receiver.userIdStopList.add(report.sender.id)
         users.update(report.sender)
         users.update(report.receiver)
     }
@@ -124,14 +124,14 @@ class Database(
     }
 
     fun acceptWish(patron: PatronUser, wish: Wish) {
-        patron.wishIdBlackList.add(wish.id)
+        patron.wishIdStopList.add(wish.id)
         users.update(patron)
         wish.patronId = patron.id
         wishes.update(wish)
     }
 
     fun skipWish(patron: PatronUser, wish: Wish) {
-        patron.wishIdBlackList.add(wish.id)
+        patron.wishIdStopList.add(wish.id)
         users.update(patron)
     }
 

@@ -22,8 +22,8 @@ class PatronUserCodec :
         val doc = Document()
         doc["_id"] = ObjectId(user.id)
         doc["telegramId"] = user.telegramId
-        doc["wishIdBlackList"] = user.wishIdBlackList.map { ObjectId(it) }
-        doc["authorIdBlackList"] = user.authorIdBlackList.map { ObjectId(it) }
+        doc["wishIdStopList"] = user.wishIdStopList.map { ObjectId(it) }
+        doc["userIdStopList"] = user.userIdStopList.map { ObjectId(it) }
         user.languageCode ?.let { doc["languageCode"] = it }
 
         doc["stats.reputation"] = user.stats.reputation
@@ -53,8 +53,8 @@ class PatronUserCodec :
                 othersFulfillmentCancelled = doc.getInteger("stats.othersFulfillmentCancelled")
             },
         ).apply {
-            wishIdBlackList.addAll(doc.getList("wishIdBlackList", ObjectId::class.java).map { it.toHexString() })
-            authorIdBlackList.addAll(doc.getList("authorIdBlackList", ObjectId::class.java).map { it.toHexString() })
+            wishIdStopList.addAll(doc.getList("wishIdStopList", ObjectId::class.java).map { it.toHexString() })
+            userIdStopList.addAll(doc.getList("userIdStopList", ObjectId::class.java).map { it.toHexString() })
             doc.getString("languageCode")?.let { languageCode = it }
         }
     }
