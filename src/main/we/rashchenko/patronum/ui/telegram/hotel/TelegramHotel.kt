@@ -22,27 +22,34 @@ class TelegramHotel(private val moderatorUserId: Long) {
         start()
     }
 
+    private enum class HotelState{
+        OPEN, OPENING, CLOSED, ERROR
+    }
+
     private fun start() {
-        var ready = false
+        var state = HotelState.CLOSED
         // Configure the client
         client.addUpdateHandler(TdApi.UpdateAuthorizationState::class.java) {
-            when (it.authorizationState) {
-                is TdApi.AuthorizationStateReady -> {
-                    println("Logged in")
-                    ready = true
-                }
-                is TdApi.AuthorizationStateClosing -> println("Closing...")
-                is TdApi.AuthorizationStateClosed -> println("Closed")
-                is TdApi.AuthorizationStateLoggingOut -> println("Logging out...")
-                else -> println("Unknown authorisation state: $it")
+            state = when (it.authorizationState) {
+                is TdApi.AuthorizationStateReady -> HotelState.OPEN
+                is TdApi.AuthorizationStateWaitTdlibParameters,
+                is TdApi.AuthorizationStateWaitEncryptionKey -> HotelState.OPENING
+                else -> HotelState.ERROR
             }
         }
 
         // Start the client
         val authenticationData = AuthenticationData.consoleLogin()
         client.start(authenticationData)
-        while (!ready) {
-            println("Waiting for login...")
+
+        repeat(retries) {
+            if (state == HotelState.OPEN) {
+                println("Hotel opened")
+                return
+            }
+            if (state == HotelState.ERROR) {
+                throw IllegalStateException("Hotel opening failed")
+            }
             Thread.sleep(1000)
         }
     }
@@ -53,7 +60,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
         }
     }
 
-    private fun sendStartMessage(chatId: Long, onSuccess: () -> Unit){
+    private fun sendStartMessage(chatId: Long, onSuccess: () -> Unit) {
         client.send(
             TdApi.SendMessage(
                 chatId,
@@ -75,7 +82,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
                     true
                 )
             )
-        ){
+        ) {
             println("Status of sending start message: ${it.get()}")
             onSuccess()
         }
@@ -92,7 +99,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
             val chat = resultChat.get()
             chatId = chat.id
             onRoomOpened(chatId!!)
-            sendStartMessage(chat.id){
+            sendStartMessage(chat.id) {
                 leaveRoom(chat.id)
             }
             println("Created chat ${chat.id}")
