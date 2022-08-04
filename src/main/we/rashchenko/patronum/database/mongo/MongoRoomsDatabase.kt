@@ -9,24 +9,19 @@ import we.rashchenko.patronum.hotel.WishRoom
 class MongoRoomsDatabase(
     private val roomsCollection: MongoCollection<WishRoom>
 ) : RoomsDatabase {
-    private val cache = mutableMapOf<Long, WishRoom>()
 
     override fun getByTelegramId(telegramId: Long): WishRoom? {
-        return cache[telegramId] ?: roomsCollection.find(Filters.eq("telegramId", telegramId)).firstOrNull()?.also {
-            cache[telegramId] = it
-        }
+        return roomsCollection.find(Filters.eq("telegramId", telegramId)).firstOrNull()
     }
 
     override fun new(room: WishRoom) {
         roomsCollection.insertOne(room)
-        cache[room.telegramChatId] = room
     }
 
     override fun update(room: WishRoom) {
         roomsCollection.replaceOne(
             Filters.eq("_id", ObjectId(room.id)), room
         )
-        cache[room.telegramChatId] = room
     }
 
     override fun getOpen(): Iterable<WishRoom> {

@@ -4,15 +4,16 @@ import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.dispatcher.handlers.Handler
 import com.github.kotlintelegrambot.entities.KeyboardReplyMarkup
 import com.github.kotlintelegrambot.entities.Update
+import com.github.kotlintelegrambot.entities.User
 import com.github.kotlintelegrambot.entities.keyboard.KeyboardButton
 import we.rashchenko.patronum.wishes.Wish
 import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 
 
 class ManageWishHandler(
-    private val externalCheckUpdate: (Long) -> Boolean,
-    private val onWishDelete: (Long, Wish) -> Unit,
-    private val onCancel: (Long) -> Unit,
+    private val externalCheckUpdate: (User) -> Boolean,
+    private val onWishDelete: (User, Wish) -> Unit,
+    private val onCancel: (User) -> Unit,
 ) : Handler {
 
     private enum class State {
@@ -25,7 +26,7 @@ class ManageWishHandler(
         userWishes[userId] = wish
     }
 
-    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it.id) } ?: false
+    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it) } ?: false
     override fun handleUpdate(bot: Bot, update: Update) {
         val user = getTelegramUser(update) ?: return
         val chatId = getChatId(update) ?: return
@@ -42,7 +43,7 @@ class ManageWishHandler(
             bot.clearKeyboard(chatId, cancelMessage)
             states.remove(user.id)
             userWishes.remove(user.id)
-            onCancel(user.id)
+            onCancel(user)
             return
         }
 
@@ -61,7 +62,7 @@ class ManageWishHandler(
             )
         }, checkValidText = {state == State.WAIT_FOR_REACTION && it?.text == deleteMessage})?: return
         bot.clearKeyboard(chatId, getLocalisedMessage("manage_wish_remove", user.languageCode))
-        onWishDelete(user.id, userWishes[user.id]!!)
+        onWishDelete(user, userWishes[user.id]!!)
         userWishes.remove(user.id)
         states.remove(user.id)
     }

@@ -2,8 +2,8 @@ package we.rashchenko.patronum.errors
 
 import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 
-class WishNotExistError: UserReadableError("WishNotExistError") {
+class ReportAgainError: UserReadableError("ReportAgainError") {
     override fun getUserReadableMessage(languageCode: String?): String {
-        return getLocalisedMessage("database_wish_unknown", languageCode)
+        return getLocalisedMessage("hotel_report_again", languageCode)
     }
 }

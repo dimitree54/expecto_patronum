@@ -28,7 +28,7 @@ class ModeratorBot(private val database: Database) {
                 if (languages.size > 1) {
                     bot.warnAboutMultiLanguage(chatId, languages)
                 }
-                val wish = database.getWish(room.wishId)
+                val wish = database.getWishById(room.wishId)
                 bot.sendMessageMultiLanguage(chatId, languages, "hotel_greetings")
                 bot.sendMessageMultiLanguage(chatId, languages, "hotel_wish_intro")
                 sendWishCard(bot, chatId, wish, languages)

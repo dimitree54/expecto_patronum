@@ -9,9 +9,9 @@ import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 
 
 class SearchHandler(
-    private val externalCheckUpdate: (Long) -> Boolean,
-    private val onSearchRequestCreated: (Long, SearchInfoDraft) -> Unit,
-    private val onCancel: (Long) -> Unit,
+    private val externalCheckUpdate: (User) -> Boolean,
+    private val onSearchRequestCreated: (User, SearchInfoDraft) -> Unit,
+    private val onCancel: (User) -> Unit,
 ) : Handler {
 
     private enum class MakeARequestState {
@@ -20,7 +20,7 @@ class SearchHandler(
 
     private val userStates = mutableMapOf<Long, MakeARequestState>()
     private val drafts = mutableMapOf<Long, SearchInfoDraft>()
-    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it.id) } ?: false
+    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it) } ?: false
     override fun handleUpdate(bot: Bot, update: Update) {
         val user = getTelegramUser(update) ?: return
         val chatId = getChatId(update) ?: return
@@ -30,7 +30,7 @@ class SearchHandler(
         val cancelButton = KeyboardButton(cancelMessage)
         if (message?.text == cancelMessage) {
             cleanup(bot, chatId, user, cancelMessage)
-            onCancel(user.id)
+            onCancel(user)
             return
         }
 
@@ -44,14 +44,14 @@ class SearchHandler(
                 MakeARequestState.ASK_FOR_RADIUS, MakeARequestState.WAIT_FOR_RADIUS -> {
                     if (isRadiusStageDone(bot, requestDraft, message, user, chatId, cancelButton)) {
                         cleanup(bot, chatId, user, getLocalisedMessage("search_in_progress", user.languageCode))
-                        onSearchRequestCreated(user.id, requestDraft)
+                        onSearchRequestCreated(user, requestDraft)
                         return
                     } else break
                 }
 
                 MakeARequestState.SKIP_LOCATION -> {
                     cleanup(bot, chatId, user, getLocalisedMessage("search_in_progress", user.languageCode))
-                    onSearchRequestCreated(user.id, requestDraft)
+                    onSearchRequestCreated(user, requestDraft)
                     return
                 }
             }

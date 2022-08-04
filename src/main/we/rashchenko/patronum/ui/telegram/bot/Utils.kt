@@ -4,6 +4,7 @@ import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.entities.*
 import we.rashchenko.patronum.database.stats.GlobalStats
 import we.rashchenko.patronum.database.stats.UserStats
+import we.rashchenko.patronum.errors.UserReadableError
 import we.rashchenko.patronum.search.SearchInfo
 import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 import we.rashchenko.patronum.wishes.Wish
@@ -90,17 +91,30 @@ fun sendUserStatistics(bot: Bot, user: User, chatId: ChatId.Id, stats: UserStats
     )
 }
 
+fun Bot.warnAboutMultiLanguage(
+    chatId: ChatId,
+    setOfLanguages: Set<String>
+){
+    sendMessageMultiLanguage(chatId, setOfLanguages, "hotel_warning_multilanguage")
+}
+
 fun Bot.sendMessageMultiLanguage(
     chatId: ChatId,
     setOfLanguages: Set<String>,
-    messageName: String,
-    warn: Boolean = true,
+    messageName: String
 ) {
     setOfLanguages.ifEmpty { setOf(null) }.forEach {
         sendMessage(chatId, getLocalisedMessage(messageName, it))
     }
-    if (setOfLanguages.size > 1 && warn) {
-        sendMessageMultiLanguage(chatId, setOfLanguages, "hotel_warning_multilanguage", false)
+}
+
+fun Bot.sendErrorMultiLanguage(
+    chatId: ChatId,
+    setOfLanguages: Set<String>,
+    error: UserReadableError
+){
+    setOfLanguages.ifEmpty { setOf(null) }.forEach {
+        sendMessage(chatId, error.getUserReadableMessage(it))
     }
 }
 

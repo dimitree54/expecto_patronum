@@ -3,18 +3,33 @@ package we.rashchenko.patronum.ui.telegram.bot
 import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
-import com.github.kotlintelegrambot.entities.ChatId
+import com.github.kotlintelegrambot.dispatcher.handlers.Handler
+import com.github.kotlintelegrambot.entities.Update
+import com.github.kotlintelegrambot.entities.User
 import com.github.kotlintelegrambot.logging.LogLevel
 import we.rashchenko.patronum.database.Database
-import we.rashchenko.patronum.database.PatronUser
 import we.rashchenko.patronum.database.mongo.MongoDatabaseBuilder
-import we.rashchenko.patronum.database.stats.UserStats
+import we.rashchenko.patronum.errors.UserNotExistError
 import we.rashchenko.patronum.errors.UserReadableError
-import we.rashchenko.patronum.hotel.WishRoom
 import we.rashchenko.patronum.ui.telegram.hotel.TelegramHotel
 import we.rashchenko.patronum.wishes.Wish
-import java.time.Period
-import java.util.*
+
+class SafeHandlerWrapper(private val baseHandler: Handler, private val repeater: Repeater) : Handler {
+    override fun checkUpdate(update: Update) = baseHandler.checkUpdate(update)
+
+    override fun handleUpdate(bot: Bot, update: Update) {
+        val user = getTelegramUser(update) ?: return
+        val chatId = getChatId(update) ?: return
+        val languages = user.languageCode?.let { setOf(it) } ?: setOf()
+        try {
+            baseHandler.handleUpdate(bot, update)
+        } catch (error: UserReadableError) {
+            bot.sendErrorMultiLanguage(chatId, languages, error)
+            repeater.requestRepeat()
+        }
+    }
+
+}
 
 class ExpectoPatronum {
     private val database: Database = MongoDatabaseBuilder().build()
@@ -26,170 +41,145 @@ class ExpectoPatronum {
         hotel = TelegramHotel(moderatorBotId)
     }
 
-    private val newUserReputation = Properties().let {
-        it.load(ClassLoader.getSystemResourceAsStream("reputation.properties"))
-        it.getProperty("start").toFloat()
-    }
-
-    private val expirationPeriod = Properties().let {
-        it.load(ClassLoader.getSystemResourceAsStream("limits.properties"))
-        Period.ofDays(it.getProperty("wishExpirationDays").toInt())
-    }
-
     private enum class MainState {
-        NEW_USER, MENU, MAKE_A_WISH, SEARCH, BROWSER, MY_WISHES, MANAGE_WISH
+        MENU, MAKE_A_WISH, SEARCH, BROWSER, MY_WISHES, MANAGE_WISH
     }
 
-    private fun isUserInDatabase(telegramUserId: Long): Boolean {
-        return database.getUserByTelegramId(telegramUserId) != null
-    }
-
-    private fun isRegistrationRequired(telegramUserId: Long): Boolean {
-        val userState = chatStates.getOrPut(telegramUserId) {
-            if (isUserInDatabase(telegramUserId)) MainState.MENU else MainState.NEW_USER
+    private fun isRegistrationRequired(telegramUser: User): Boolean {
+        return try {
+            database.getUserByTelegramId(telegramUser.id)
+            false
+        } catch (e: UserNotExistError) {
+            true
         }
-        return userState == MainState.NEW_USER
     }
 
-    private fun isMenuRequired(telegramUserId: Long): Boolean {
-        return chatStates[telegramUserId] == MainState.MENU
+    private fun isMenuRequired(telegramUser: User): Boolean {
+        return chatStates[telegramUser.id] == MainState.MENU
     }
 
-    private fun isMakeAWishRequired(telegramUserId: Long): Boolean {
-        return chatStates[telegramUserId] == MainState.MAKE_A_WISH
+    private fun isMakeAWishRequired(telegramUser: User): Boolean {
+        return chatStates[telegramUser.id] == MainState.MAKE_A_WISH
     }
 
-    private fun isSearchRequired(telegramUserId: Long): Boolean {
-        return chatStates[telegramUserId] == MainState.SEARCH
+    private fun isSearchRequired(telegramUser: User): Boolean {
+        return chatStates[telegramUser.id] == MainState.SEARCH
     }
 
-    private fun isBrowserRequired(telegramUserId: Long): Boolean {
-        return chatStates[telegramUserId] == MainState.BROWSER
+    private fun isBrowserRequired(telegramUser: User): Boolean {
+        return chatStates[telegramUser.id] == MainState.BROWSER
     }
 
-    private fun isMyWishesRequired(telegramUserId: Long): Boolean {
-        return chatStates[telegramUserId] == MainState.MY_WISHES
+    private fun isMyWishesRequired(telegramUser: User): Boolean {
+        return chatStates[telegramUser.id] == MainState.MY_WISHES
     }
 
-    private fun isManageWishRequired(telegramUserId: Long): Boolean {
-        return chatStates[telegramUserId] == MainState.MANAGE_WISH
+    private fun isManageWishRequired(telegramUser: User): Boolean {
+        return chatStates[telegramUser.id] == MainState.MANAGE_WISH
     }
 
     private fun buildRegistrationHandler(repeater: Repeater) =
-        RegistrationHandler(externalCheckUpdate = ::isRegistrationRequired,
-            onSuccessfulRegistration = { telegramUser ->
-                val newUser = PatronUser(database.generateNewUserId(), telegramUser.id, UserStats(newUserReputation))
-                newUser.languageCode = telegramUser.languageCode
-                database.newUser(newUser)
-                chatStates[telegramUser.id] = MainState.MENU
-                repeater.requestRepeat()
-            })
+        RegistrationHandler(externalCheckUpdate = ::isRegistrationRequired, onSuccessfulRegistration = { telegramUser ->
+            database.newUser(telegramUser.id, telegramUser.languageCode)
+            chatStates[telegramUser.id] = MainState.MENU
+            repeater.requestRepeat()
+        }
+    )
 
     private fun buildMenuHandler(repeater: Repeater) =
-        MenuHandler(externalCheckUpdate = ::isMenuRequired, getWishUserFulfilling = { telegramUserId ->
-            database.getUserByTelegramId(telegramUserId)?.let {
-                database.getWishesByPatron(it).firstOrNull()
-            }
+        MenuHandler(externalCheckUpdate = ::isMenuRequired, getWishUserFulfilling = { telegramUser ->
+            val patron = database.getUserByTelegramId(telegramUser.id)
+            database.getWishesByPatron(patron).firstOrNull()
         }, getUserStatistics = {
-            database.getUserByTelegramId(it)!!.stats
+            database.getUserByTelegramId(it.id).stats
         }, getGlobalStatistics = {
             database.getGlobalStats()
         }, onMakeWishPressed = {
-            chatStates[it] = MainState.MAKE_A_WISH
+            chatStates[it.id] = MainState.MAKE_A_WISH
             repeater.requestRepeat()
         }, onSearchPressed = {
-            chatStates[it] = MainState.SEARCH
+            chatStates[it.id] = MainState.SEARCH
             repeater.requestRepeat()
         }, onCancelFulfillmentPressed = {
-            val wish = database.getWishesByPatron(database.getUserByTelegramId(it)!!).first()
-            database.cancelWishByPatron(wish)
+            val wish = database.getWishesByPatron(database.getUserByTelegramId(it.id)).first()
+            database.cancelFulfillmentByPatron(wish)
             repeater.requestRepeat()
         }, onMyWishesPressed = {
-            chatStates[it] = MainState.MY_WISHES
+            chatStates[it.id] = MainState.MY_WISHES
             repeater.requestRepeat()
-        })
+        }
+    )
 
     private fun buildMakeAWishHandler(repeater: Repeater) =
-        MakeAWishHandler(externalCheckUpdate = ::isMakeAWishRequired, onWishCreated = { telegramUserId, wishDraft ->
-            database.newWish(
-                wishDraft.toWish(
-                    database.generateNewWishId(), database.getUserByTelegramId(telegramUserId)!!, expirationPeriod
-                )
-            )
-            chatStates[telegramUserId] = MainState.MENU
+        MakeAWishHandler(externalCheckUpdate = ::isMakeAWishRequired, onWishCreated = { telegramUser, wishDraft ->
+            database.newWish(telegramUser.id, wishDraft)
+            chatStates[telegramUser.id] = MainState.MENU
             repeater.requestRepeat()
         }, onCancel = {
-            chatStates[it] = MainState.MENU
+            chatStates[it.id] = MainState.MENU
             repeater.requestRepeat()
-        })
-
-    private fun buildSearchHandler(repeater: Repeater, browserHandler: BrowserHandler) = SearchHandler(
-        externalCheckUpdate = ::isSearchRequired,
-        onSearchRequestCreated = { telegramUserId, searchRequestDraft ->
-            val patron = database.getUserByTelegramId(telegramUserId)!!
-            val searchResults = database.search(patron, searchRequestDraft.toSearchInfo())
-            browserHandler.registerSearchResults(telegramUserId, searchResults)
-            chatStates[telegramUserId] = MainState.BROWSER
-            repeater.requestRepeat()
-        },
-        onCancel = {
-            chatStates[it] = MainState.MENU
-            repeater.requestRepeat()
-        })
-
-    private fun acceptWish(bot: Bot, chatId: ChatId.Id, patronTelegramId: Long, wish: Wish, repeater: Repeater) {
-        val patron = database.getUserByTelegramId(patronTelegramId)!!
-        try{
-            hotel.openRoom(wish.title.text, listOf(wish.author.telegramId, patronTelegramId)){roomTelegramId ->
-                val newRoom = WishRoom(database.generateNewRoomId(), roomTelegramId, wish).apply {
-                    wish.author.languageCode?.let { addLanguageCode(it) }
-                    patron.languageCode?.let { addLanguageCode(it) }
-                }
-                database.openWishRoom(newRoom)
-                database.acceptWish(patron, wish)
-            }
         }
-        catch (e: UserReadableError){
-            val author = database.getUserByTelegramId(wish.author.telegramId)!!
-            bot.sendMessage(chatId, e.getUserReadableMessage(author.languageCode))
-            chatStates[wish.author.telegramId] = MainState.MENU
-            repeater.requestRepeat()
+    )
+
+    private fun buildSearchHandler(repeater: Repeater, browserHandler: BrowserHandler) =
+        SearchHandler(externalCheckUpdate = ::isSearchRequired,
+            onSearchRequestCreated = { telegramUser, searchRequestDraft ->
+                val patron = database.getUserByTelegramId(telegramUser.id)
+                val searchResults = database.search(patron, searchRequestDraft.toSearchInfo())
+                browserHandler.registerSearchResults(telegramUser.id, searchResults)
+                chatStates[telegramUser.id] = MainState.BROWSER
+                repeater.requestRepeat()
+            },
+            onCancel = {
+                chatStates[it.id] = MainState.MENU
+                repeater.requestRepeat()
+            }
+        )
+
+    private fun acceptWish(patronTelegram: User, wish: Wish) {
+        val author = database.getUserById(wish.authorId)
+        val patron = database.getUserByTelegramId(patronTelegram.id)
+        hotel.openRoom(wish.title.text, listOf(author.telegramId, patronTelegram.id)) { roomTelegramId ->
+            database.openWishRoom(roomTelegramId, wish)
+            database.acceptWish(patron, wish)
         }
     }
 
     private fun buildBrowserHandler(repeater: Repeater) =
-        BrowserHandler(externalCheckUpdate = ::isBrowserRequired, onMatch = { bot, chatId, telegramUserId, wish ->
-            acceptWish(bot, chatId, telegramUserId, wish, repeater)
-            chatStates[telegramUserId] = MainState.MENU
+        BrowserHandler(externalCheckUpdate = ::isBrowserRequired, onMatch = { telegramUser, wish ->
+            acceptWish(telegramUser, wish)
+            chatStates[telegramUser.id] = MainState.MENU
             repeater.requestRepeat()
-        }, onSkip = { telegramUserId, wish ->
-            val patron = database.getUserByTelegramId(telegramUserId)!!
+        }, onSkip = { telegramUser, wish ->
+            val patron = database.getUserByTelegramId(telegramUser.id)
             database.skipWish(patron, wish)
         }, onCancel = {
-            chatStates[it] = MainState.MENU
+            chatStates[it.id] = MainState.MENU
             repeater.requestRepeat()
-        })
+        }
+    )
 
     private fun buildManageWishHandler(repeater: Repeater) =
-        ManageWishHandler(externalCheckUpdate = ::isManageWishRequired, onWishDelete = { telegramUserId, wish ->
+        ManageWishHandler(externalCheckUpdate = ::isManageWishRequired, onWishDelete = { telegramUser, wish ->
             database.cancelWishByAuthor(wish)
-            chatStates[telegramUserId] = MainState.MENU
+            chatStates[telegramUser.id] = MainState.MENU
             repeater.requestRepeat()
         }, onCancel = {
-            chatStates[it] = MainState.MENU
+            chatStates[it.id] = MainState.MENU
             repeater.requestRepeat()
-        })
+        }
+    )
 
     private fun buildMyWishesHandler(repeater: Repeater, manageWishHandler: ManageWishHandler) =
-        MyWishesHandler(externalCheckUpdate = ::isMyWishesRequired, getUserWishes = { telegramUserId ->
-            val author = database.getUserByTelegramId(telegramUserId)!!
+        MyWishesHandler(externalCheckUpdate = ::isMyWishesRequired, getUserWishes = { telegramUser ->
+            val author = database.getUserByTelegramId(telegramUser.id)
             database.getWishesByAuthor(author).toList()
-        }, onWishChosen = { telegramUserId, wish ->
-            chatStates[telegramUserId] = MainState.MANAGE_WISH
-            manageWishHandler.registerChosenWish(telegramUserId, wish)
+        }, onWishChosen = { telegramUser, wish ->
+            chatStates[telegramUser.id] = MainState.MANAGE_WISH
+            manageWishHandler.registerChosenWish(telegramUser.id, wish)
             repeater.requestRepeat()
         }, onCancel = {
-            chatStates[it] = MainState.MENU
+            chatStates[it.id] = MainState.MENU
             repeater.requestRepeat()
         })
 
@@ -201,33 +191,40 @@ class ExpectoPatronum {
 
         dispatch {
             val registrationHandler = buildRegistrationHandler(repeater)
-            addHandler(registrationHandler)
-            repeater.addHandler(registrationHandler)
+            val safeRegistrationHandler = SafeHandlerWrapper(registrationHandler, repeater)
+            addHandler(safeRegistrationHandler)
+            repeater.addHandler(safeRegistrationHandler)
 
             val menuHandler = buildMenuHandler(repeater)
-            addHandler(menuHandler)
-            repeater.addHandler(menuHandler)
+            val safeMenuHandler = SafeHandlerWrapper(menuHandler, repeater)
+            addHandler(safeMenuHandler)
+            repeater.addHandler(safeMenuHandler)
 
             val makeAWishHandler = buildMakeAWishHandler(repeater)
-            addHandler(makeAWishHandler)
-            repeater.addHandler(makeAWishHandler)
+            val safeMakeAWishHandler = SafeHandlerWrapper(makeAWishHandler, repeater)
+            addHandler(safeMakeAWishHandler)
+            repeater.addHandler(safeMakeAWishHandler)
 
             val browserHandler = buildBrowserHandler(repeater)
             val searchHandler = buildSearchHandler(repeater, browserHandler)
-            addHandler(searchHandler)
-            repeater.addHandler(searchHandler)
-            addHandler(browserHandler)
-            repeater.addHandler(browserHandler)
+            val safeBrowserHandler = SafeHandlerWrapper(browserHandler, repeater)
+            val safeSearchHandler = SafeHandlerWrapper(searchHandler, repeater)
+            addHandler(safeSearchHandler)
+            repeater.addHandler(safeSearchHandler)
+            addHandler(safeBrowserHandler)
+            repeater.addHandler(safeBrowserHandler)
 
             val manageWishHandler = buildManageWishHandler(repeater)
             val myWishesHandler = buildMyWishesHandler(repeater, manageWishHandler)
-            addHandler(myWishesHandler)
-            repeater.addHandler(myWishesHandler)
-            addHandler(manageWishHandler)
-            repeater.addHandler(manageWishHandler)
+            val safeManageWishHandler = SafeHandlerWrapper(manageWishHandler, repeater)
+            val safeMyWishesHandler = SafeHandlerWrapper(myWishesHandler, repeater)
+            addHandler(safeMyWishesHandler)
+            repeater.addHandler(safeMyWishesHandler)
+            addHandler(safeManageWishHandler)
+            repeater.addHandler(safeManageWishHandler)
 
             repeater.addHandler(repeater)  // to support several repeat requests in a row, BEWARE OF INFINITE LOOPS
-            addHandler(repeater)  // Repeater must be last handler
+            addHandler(repeater)  // Repeater have to be last handler
         }
     }
 }

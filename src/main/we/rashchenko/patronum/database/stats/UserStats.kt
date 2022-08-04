@@ -8,8 +8,9 @@ class UserStats(var reputation: Float) {
     var myWishesActive: Int = 0
     var myWishesDone: Int = 0
     var myWishesCancelled: Int = 0
+    var myFulfillmentCancelled: Int = 0
     var othersWishesDone: Int = 0
-    var othersWishesCancelled: Int = 0
+    var othersFulfillmentCancelled: Int = 0
 
     fun sendReport() {
         reportsSent++
@@ -38,14 +39,19 @@ class UserStats(var reputation: Float) {
         reputation += ReputationDeltas.myWishCancel
     }
 
+    fun myFulfillmentCancel() {
+        myFulfillmentCancelled++
+        reputation += ReputationDeltas.myFulfillmentCancel
+    }
+
     fun othersWishDone(rate: Float = 1f, bounty: Float = 0f) {
         othersWishesDone++
         reputation += ReputationDeltas.othersWishDoneMax * rate + bounty
     }
 
-    fun othersWishCancel() {
-        othersWishesCancelled++
-        reputation += ReputationDeltas.othersWishCancel
+    fun othersFulfillmentCancel() {
+        othersFulfillmentCancelled++
+        reputation += ReputationDeltas.othersFulfillmentCancel
     }
 
     fun stakeBounty(bounty: Float) {
@@ -58,8 +64,9 @@ class UserStats(var reputation: Float) {
         val myNewWish: Float
         val myWishDone: Float
         val myWishCancel: Float
+        val myFulfillmentCancel: Float
         val othersWishDoneMax: Float
-        val othersWishCancel: Float
+        val othersFulfillmentCancel: Float
 
         init {
             Properties().also {
@@ -69,8 +76,9 @@ class UserStats(var reputation: Float) {
                 myNewWish = (it["my_new_wish"] as String).toFloat()
                 myWishDone = (it["my_wish_done"] as String).toFloat()
                 myWishCancel = (it["my_wish_cancel"] as String).toFloat()
+                myFulfillmentCancel = (it["my_fulfillment_cancel"] as String).toFloat()
                 othersWishDoneMax = (it["others_wish_done_max"] as String).toFloat()
-                othersWishCancel = (it["others_wish_cancel"] as String).toFloat()
+                othersFulfillmentCancel = (it["others_fulfillment_cancel"] as String).toFloat()
             }
         }
     }

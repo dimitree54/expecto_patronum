@@ -8,14 +8,15 @@ import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 
 
 class RegistrationHandler(
-    private val externalCheckUpdate: (Long) -> Boolean, private val onSuccessfulRegistration: (User) -> Unit
+    private val externalCheckUpdate: (User) -> Boolean,
+    private val onSuccessfulRegistration: (User) -> Unit
 ) : Handler {
 
     private enum class CallBackMessages(val value: String) {
         ACCEPT("accept"),
     }
 
-    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it.id) } ?: false
+    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it) } ?: false
 
     override fun handleUpdate(bot: Bot, update: Update) {
         update.message?.let {

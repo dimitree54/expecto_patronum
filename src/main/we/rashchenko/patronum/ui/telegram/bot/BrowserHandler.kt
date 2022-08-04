@@ -9,10 +9,10 @@ import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 
 
 class BrowserHandler(
-    private val externalCheckUpdate: (Long) -> Boolean,
-    private val onMatch: (Bot, ChatId.Id, Long, Wish) -> Unit,
-    private val onSkip: (Long, Wish) -> Unit,
-    private val onCancel: (Long) -> Unit,
+    private val externalCheckUpdate: (User) -> Boolean,
+    private val onMatch: (User, Wish) -> Unit,
+    private val onSkip: (User, Wish) -> Unit,
+    private val onCancel: (User) -> Unit,
 ) : Handler {
     private enum class State {
         SEND_FIRST_CARD, WAIT_FOR_REACTION
@@ -27,7 +27,7 @@ class BrowserHandler(
         }
     }
 
-    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it.id) } ?: false
+    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it) } ?: false
     override fun handleUpdate(bot: Bot, update: Update) {
 
         val user = getTelegramUser(update) ?: return
@@ -47,24 +47,24 @@ class BrowserHandler(
             bot.clearKeyboard(chatId, getLocalisedMessage("browser_no_results", user.languageCode))
             states.remove(user.id)
             ticketsQueue.remove(user.id)
-            onCancel(user.id)
+            onCancel(user)
             return
         }
         if (state == State.WAIT_FOR_REACTION && message?.text == cancelMessage) {
             states.remove(user.id)
             ticketsQueue.remove(user.id)
-            onCancel(user.id)
+            onCancel(user)
             return
         }
         else if ((state == State.WAIT_FOR_REACTION && message?.text == acceptMessage)){
             bot.clearKeyboard(chatId, getLocalisedMessage("browser_connect", user.languageCode))
             states.remove(user.id)
             ticketsQueue.remove(user.id)
-            onMatch(bot, chatId, user.id, tickets.first())
+            onMatch(user, tickets.first())
             return
         }
         else if ((state == State.WAIT_FOR_REACTION && message?.text == skipMessage)){
-            onSkip(user.id, tickets.first())
+            onSkip(user, tickets.first())
             tickets.removeFirst()
         }
 

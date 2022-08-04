@@ -10,36 +10,36 @@ import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 import we.rashchenko.patronum.wishes.Wish
 
 class MenuHandler(
-    private val externalCheckUpdate: (Long) -> Boolean,
-    private val getUserStatistics: (Long) -> UserStats,
+    private val externalCheckUpdate: (User) -> Boolean,
+    private val getUserStatistics: (User) -> UserStats,
     private val getGlobalStatistics: () -> GlobalStats,
-    private val getWishUserFulfilling: (Long) -> Wish?,
-    private val onMakeWishPressed: (Long) -> Unit,
-    private val onSearchPressed: (Long) -> Unit,
-    private val onCancelFulfillmentPressed: (Long) -> Unit,
-    private val onMyWishesPressed: (Long) -> Unit,
+    private val getWishUserFulfilling: (User) -> Wish?,
+    private val onMakeWishPressed: (User) -> Unit,
+    private val onSearchPressed: (User) -> Unit,
+    private val onCancelFulfillmentPressed: (User) -> Unit,
+    private val onMyWishesPressed: (User) -> Unit,
 ) : Handler {
 
     private enum class CallBackMessages(val value: String) {
         MAKE_WISH("menu_make_wish"), DO_WISH("menu_do_good"), CANCEL_FULFILLMENT("cancel_fulfillment"), MY_WISHES("menu_my_wishes")
     }
 
-    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it.id) } ?: false
+    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it) } ?: false
 
     override fun handleUpdate(bot: Bot, update: Update) {
         val user = getTelegramUser(update) ?: return
         val chatId = getChatId(update) ?: return
-        val userStatistics = getUserStatistics(user.id)
-        val wishUserFulfilling = getWishUserFulfilling(user.id)
+        val userStatistics = getUserStatistics(user)
+        val wishUserFulfilling = getWishUserFulfilling(user)
 
         val buttons = buildAnswerButtons(user, wishUserFulfilling != null, userStatistics.myWishesActive > 0)
 
         update.callbackQuery?.let {
             when (it.data) {
-                CallBackMessages.MAKE_WISH.value -> onMakeWishPressed(user.id)
-                CallBackMessages.DO_WISH.value -> onSearchPressed(user.id)
-                CallBackMessages.CANCEL_FULFILLMENT.value -> onCancelFulfillmentPressed(user.id)
-                CallBackMessages.MY_WISHES.value -> onMyWishesPressed(user.id)
+                CallBackMessages.MAKE_WISH.value -> onMakeWishPressed(user)
+                CallBackMessages.DO_WISH.value -> onSearchPressed(user)
+                CallBackMessages.CANCEL_FULFILLMENT.value -> onCancelFulfillmentPressed(user)
+                CallBackMessages.MY_WISHES.value -> onMyWishesPressed(user)
                 else -> null
             }
         } ?: run{

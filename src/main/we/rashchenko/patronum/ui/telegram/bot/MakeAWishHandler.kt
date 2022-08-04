@@ -4,7 +4,6 @@ import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.dispatcher.handlers.Handler
 import com.github.kotlintelegrambot.entities.*
 import com.github.kotlintelegrambot.entities.keyboard.KeyboardButton
-import we.rashchenko.patronum.errors.UserReadableError
 import we.rashchenko.patronum.search.SearchInfoDraft
 import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 import we.rashchenko.patronum.wishes.WishDraft
@@ -13,9 +12,9 @@ import we.rashchenko.patronum.wishes.strings.Title
 
 
 class MakeAWishHandler(
-    private val externalCheckUpdate: (Long) -> Boolean,
-    private val onWishCreated: (Long, WishDraft) -> Unit,
-    private val onCancel: (Long) -> Unit,
+    private val externalCheckUpdate: (User) -> Boolean,
+    private val onWishCreated: (User, WishDraft) -> Unit,
+    private val onCancel: (User) -> Unit,
 ) : Handler {
     private enum class State {
         ASK_FOR_TITLE, WAIT_FOR_TITLE, ASK_FOR_DESCRIPTION, WAIT_FOR_DESCRIPTION, ASK_FOR_LOCATION, WAIT_FOR_LOCATION, ASK_FOR_RADIUS, WAIT_FOR_RADIUS, ASK_FOR_CONFIRMATION, WAIT_FOR_CONFIRMATION
@@ -33,7 +32,7 @@ class MakeAWishHandler(
 
     private val userStates = mutableMapOf<Long, State>()
     private val drafts = mutableMapOf<Long, WishDraft>()
-    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it.id) } ?: false
+    override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it) } ?: false
     override fun handleUpdate(bot: Bot, update: Update) {
         val user = getTelegramUser(update) ?: return
         val chatId = getChatId(update) ?: return
@@ -45,7 +44,7 @@ class MakeAWishHandler(
             bot.clearKeyboard(chatId, cancelMessage)
             userStates.remove(user.id)
             drafts.remove(user.id)
-            onCancel(user.id)
+            onCancel(user)
             return
         }
 
@@ -68,7 +67,7 @@ class MakeAWishHandler(
                     if (isConfirmationStageDone(bot, wishDraft, message, user, chatId, cancelButton)) {
                         userStates.remove(user.id)
                         drafts.remove(user.id)
-                        onWishCreated(user.id, wishDraft)
+                        onWishCreated(user, wishDraft)
                         return
                     } else break
                 }
@@ -157,13 +156,7 @@ class MakeAWishHandler(
             sendRequestMessage = { requestTitle(bot, user, chatId, cancelButton) },
             checkValidText = { userStates[user.id] == State.WAIT_FOR_TITLE },
         )?.text ?: return false
-        try{
-            wishDraft.title = Title(title)
-        }
-        catch (e: UserReadableError){
-            bot.sendMessage(chatId, e.getUserReadableMessage(user.languageCode))
-            return false
-        }
+        wishDraft.title = Title(title)
         userStates[user.id] = State.ASK_FOR_DESCRIPTION
         return true
     }
@@ -176,13 +169,7 @@ class MakeAWishHandler(
             sendRequestMessage = { requestDescription(bot, user, chatId, cancelButton) },
             checkValidText = { userStates[user.id] == State.WAIT_FOR_DESCRIPTION },
         )?.text ?: return false
-        try{
-            wishDraft.description = Description(description)
-        }
-        catch (e: UserReadableError){
-            bot.sendMessage(chatId, e.getUserReadableMessage(user.languageCode))
-            return false
-        }
+        wishDraft.description = Description(description)
         userStates[user.id] = State.ASK_FOR_LOCATION
         return true
     }

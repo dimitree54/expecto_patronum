@@ -33,7 +33,7 @@ class PatronUserCodec :
         doc["stats.myWishesDone"] = user.stats.myWishesDone
         doc["stats.myWishesCancelled"] = user.stats.myWishesCancelled
         doc["stats.othersWishesDone"] = user.stats.othersWishesDone
-        doc["stats.othersWishesCancelled"] = user.stats.othersWishesCancelled
+        doc["stats.othersFulfillmentCancelled"] = user.stats.othersFulfillmentCancelled
 
         documentCodec.encode(bsonWriter, doc, encoderContext)
     }
@@ -50,7 +50,7 @@ class PatronUserCodec :
                 myWishesDone = doc.getInteger("stats.myWishesDone")
                 myWishesCancelled = doc.getInteger("stats.myWishesCancelled")
                 othersWishesDone = doc.getInteger("stats.othersWishesDone")
-                othersWishesCancelled = doc.getInteger("stats.othersWishesCancelled")
+                othersFulfillmentCancelled = doc.getInteger("stats.othersFulfillmentCancelled")
             },
         ).apply {
             wishIdBlackList.addAll(doc.getList("wishIdBlackList", ObjectId::class.java).map { it.toHexString() })
