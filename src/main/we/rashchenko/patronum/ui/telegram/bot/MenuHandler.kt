@@ -21,7 +21,7 @@ class MenuHandler(
 ) : Handler {
 
     private enum class CallBackMessages(val value: String) {
-        MAKE_WISH("menu_make_wish"), DO_WISH("menu_do_good"), CANCEL_FULFILLMENT("cancel_fulfillment"), MY_WISHES("menu_my_wishes")
+        MAKE_WISH("menu_make_wish"), DO_WISH("menu_do_good"), CANCEL_FULFILLMENT("cancel_fulfillment"), MY_WISHES("menu_my_wishes"), REFRESH("menu_refresh")
     }
 
     override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it) } ?: false
@@ -40,6 +40,7 @@ class MenuHandler(
                 CallBackMessages.DO_WISH.value -> onSearchPressed(user)
                 CallBackMessages.CANCEL_FULFILLMENT.value -> onCancelFulfillmentPressed(user)
                 CallBackMessages.MY_WISHES.value -> onMyWishesPressed(user)
+                CallBackMessages.REFRESH.value -> return
                 else -> null
             }
         } ?: run{
@@ -89,6 +90,11 @@ class MenuHandler(
                 )
             )
         }
+        buttons.add(
+            InlineKeyboardButton.CallbackData(
+                text = getLocalisedMessage("menu_refresh", user.languageCode), callbackData = CallBackMessages.REFRESH.value
+            )
+        )
         return buttons
     }
 }
