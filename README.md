@@ -8,8 +8,8 @@
 # Setting up backend
 1. Create an account
 2. Create a project
-3. Create cluster (free)
-4. Create database "telegram" (Browse Collections -> Add my own data) with 3 collections: users, wishes, tags
-5. Fill `mongodb.host` in application.properties with value from MongoDB page (Connect button on your cluster). 
+3. Create a cluster (free)
+4. Create the database "telegram" (Browse Collections -> Add my own data) with 3 collections: users, wishes, tags
+5. Fill `mongodb.host` in application.properties with values from the MongoDB page (the Connect button on your cluster). 
    It will request to specify security options (ip whitelist and user/password).
 6. Create environment variables `MONGODB_USER` and `MONGODB_PASSWORD` from 5.
