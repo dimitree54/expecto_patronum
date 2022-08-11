@@ -2,13 +2,15 @@ package we.rashchenko.patronum.database.mongo
 
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Projections
+import org.bson.Document
 import org.bson.types.ObjectId
 import we.rashchenko.patronum.database.PatronUser
 import we.rashchenko.patronum.database.UsersDatabase
 import we.rashchenko.patronum.database.stats.GlobalStats
 
 class MongoUsersDatabase(
-    private val usersCollection: MongoCollection<PatronUser>
+    private val usersCollection: MongoCollection<PatronUser>,
 ) : UsersDatabase {
 
     override fun new(user: PatronUser) {
@@ -28,9 +30,11 @@ class MongoUsersDatabase(
     }
 
     override fun getGlobalStats(): GlobalStats {
-        val allUsers = usersCollection.find().toList()
-        return GlobalStats().apply{
-            sortedReputations = allUsers.map { it.stats.reputation }.toTypedArray()
+        val allReputations = usersCollection.find(Document::class.java)
+            .projection(Projections.fields(Projections.include("statsReputation"), Projections.excludeId()))
+            .map { it.getInteger("statsReputation")!! }.toList()
+        return GlobalStats().apply {
+            sortedReputations = allReputations.toTypedArray()
         }
     }
 

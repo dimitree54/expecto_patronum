@@ -26,14 +26,14 @@ class PatronUserCodec :
         doc["userIdStopList"] = user.userIdStopList.map { ObjectId(it) }
         user.languageCode ?.let { doc["languageCode"] = it }
 
-        doc["stats.reputation"] = user.stats.reputation
-        doc["stats.reportsSent"] = user.stats.reportsSent
-        doc["stats.reportsReceived"] = user.stats.reportsReceived
-        doc["stats.myWishesActive"] = user.stats.myWishesActive
-        doc["stats.myWishesDone"] = user.stats.myWishesDone
-        doc["stats.myWishesCancelled"] = user.stats.myWishesCancelled
-        doc["stats.othersWishesDone"] = user.stats.othersWishesDone
-        doc["stats.othersFulfillmentCancelled"] = user.stats.othersFulfillmentCancelled
+        doc["statsReputation"] = user.stats.reputation
+        doc["statsReportsSent"] = user.stats.reportsSent
+        doc["statsReportsReceived"] = user.stats.reportsReceived
+        doc["statsMyWishesActive"] = user.stats.myWishesActive
+        doc["statsMyWishesDone"] = user.stats.myWishesDone
+        doc["statsMyWishesCancelled"] = user.stats.myWishesCancelled
+        doc["statsOthersWishesDone"] = user.stats.othersWishesDone
+        doc["statsOthersFulfillmentCancelled"] = user.stats.othersFulfillmentCancelled
 
         documentCodec.encode(bsonWriter, doc, encoderContext)
     }
@@ -43,14 +43,14 @@ class PatronUserCodec :
         return PatronUser(
             id = doc.getObjectId("_id").toHexString(),
             telegramId = doc.getLong("telegramId"),
-            stats = UserStats(doc.getDouble("stats.reputation").toFloat()).apply {
-                reportsSent = doc.getInteger("stats.reportsSent")
-                reportsReceived = doc.getInteger("stats.reportsReceived")
-                myWishesActive = doc.getInteger("stats.myWishesActive")
-                myWishesDone = doc.getInteger("stats.myWishesDone")
-                myWishesCancelled = doc.getInteger("stats.myWishesCancelled")
-                othersWishesDone = doc.getInteger("stats.othersWishesDone")
-                othersFulfillmentCancelled = doc.getInteger("stats.othersFulfillmentCancelled")
+            stats = UserStats(doc.getInteger("statsReputation")).apply {
+                reportsSent = doc.getInteger("statsReportsSent")
+                reportsReceived = doc.getInteger("statsReportsReceived")
+                myWishesActive = doc.getInteger("statsMyWishesActive")
+                myWishesDone = doc.getInteger("statsMyWishesDone")
+                myWishesCancelled = doc.getInteger("statsMyWishesCancelled")
+                othersWishesDone = doc.getInteger("statsOthersWishesDone")
+                othersFulfillmentCancelled = doc.getInteger("statsOthersFulfillmentCancelled")
             },
         ).apply {
             wishIdStopList.addAll(doc.getList("wishIdStopList", ObjectId::class.java).map { it.toHexString() })

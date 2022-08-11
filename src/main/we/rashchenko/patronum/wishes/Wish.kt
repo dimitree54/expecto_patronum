@@ -14,6 +14,6 @@ class Wish(
     val creationDate: Instant,
     var expirationDate: Instant? = null,
     var patronId: String? = null,
-    var bounty: Float = 0f,
+    var bounty: Int = 0,
     var closed: Boolean = false
 )

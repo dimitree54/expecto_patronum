@@ -20,7 +20,7 @@ class Database(
 
     private val newUserReputation = Properties().let {
         it.load(ClassLoader.getSystemResourceAsStream("reputation.properties"))
-        it.getProperty("start").toFloat()
+        it.getProperty("start").toInt()
     }
 
     private val expirationPeriod: Period
@@ -137,7 +137,7 @@ class Database(
 
     fun search(patron: PatronUser, query: SearchInfo) = searchEngine.search(patron, query)
 
-    fun getRoomByTelegramId(telegramId: Long) = rooms.getByTelegramId(telegramId)
+    fun getRoomByTelegramId(telegramId: Long) = rooms.getByTelegramId(telegramId) ?: throw RoomNotExistError()
     private fun updateRoom(room: WishRoom) = rooms.update(room)
     fun openWishRoom(roomTelegramId: Long, wish: Wish) {
         val author = getUserById(wish.authorId)

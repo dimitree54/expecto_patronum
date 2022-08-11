@@ -37,11 +37,11 @@ class WishCodec : CollectibleCodec<Wish> {
         doc["closed"] = wish.closed
 
         wish.searchInfo.searchArea?.let {polygon ->
-            doc["search_polygon"] = polygon.toMongo()
-            doc["search.polygon.points.latitude"] = polygon.points.map {
+            doc["searchPolygon"] = polygon.toMongo()
+            doc["searchPolygonPointsLatitude"] = polygon.points.map {
                 it.latitude
             }
-            doc["search.polygon.points.longitude"] = polygon.points.map {
+            doc["searchPolygonPointsLongitude"] = polygon.points.map {
                 it.longitude
             }
         }
@@ -57,7 +57,7 @@ class WishCodec : CollectibleCodec<Wish> {
             authorId = doc.getObjectId("authorId").toHexString(),
             title = Title(doc.getString("title")),
             description = Description(doc.getString("description")),
-            bounty = doc.getDouble("bounty").toFloat(),
+            bounty = doc.getInteger("bounty"),
             creationDate = doc.getDate("creationDate").toInstant(),
             expirationDate = doc.getDate("expirationDate").toInstant(),
             searchInfo = parseSearchInfo(doc),
@@ -67,8 +67,8 @@ class WishCodec : CollectibleCodec<Wish> {
     }
 
     private fun parseSearchInfo(doc: Document): SearchInfo {
-        val latitudes = doc.getList("search.polygon.points.latitude", Double::class.javaObjectType) ?: return SearchInfo()
-        val longitudes = doc.getList("search.polygon.points.longitude", Double::class.javaObjectType) ?: return SearchInfo()
+        val latitudes = doc.getList("searchPolygonPointsLatitude", Double::class.javaObjectType) ?: return SearchInfo()
+        val longitudes = doc.getList("searchPolygonPointsLongitude", Double::class.javaObjectType) ?: return SearchInfo()
         return SearchInfo(
             Polygon(
                 (latitudes zip longitudes).map {

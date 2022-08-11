@@ -85,7 +85,7 @@ fun sendUserStatistics(bot: Bot, user: User, chatId: ChatId.Id, stats: UserStats
             stats.myWishesActive,
             stats.myWishesDone,
             stats.othersWishesDone,
-            stats.reputation.roundToInt(),
+            stats.reputation,
             (globalStats.getRateOnLeaderBoard(stats.reputation) * 100).roundToInt()
         )
     )
