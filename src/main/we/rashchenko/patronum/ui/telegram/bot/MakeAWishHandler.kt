@@ -4,6 +4,7 @@ import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.dispatcher.handlers.Handler
 import com.github.kotlintelegrambot.entities.*
 import com.github.kotlintelegrambot.entities.keyboard.KeyboardButton
+import we.rashchenko.patronum.errors.UserReadableError
 import we.rashchenko.patronum.search.SearchInfoDraft
 import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 import we.rashchenko.patronum.wishes.WishDraft
@@ -156,7 +157,13 @@ class MakeAWishHandler(
             sendRequestMessage = { requestTitle(bot, user, chatId, cancelButton) },
             checkValidText = { userStates[user.id] == State.WAIT_FOR_TITLE },
         )?.text ?: return false
-        wishDraft.title = Title(title)
+        wishDraft.title = try{
+            Title(title)
+        }
+        catch (e: UserReadableError){
+            userStates[user.id] = State.ASK_FOR_TITLE
+            throw e
+        }
         userStates[user.id] = State.ASK_FOR_DESCRIPTION
         return true
     }
@@ -169,7 +176,13 @@ class MakeAWishHandler(
             sendRequestMessage = { requestDescription(bot, user, chatId, cancelButton) },
             checkValidText = { userStates[user.id] == State.WAIT_FOR_DESCRIPTION },
         )?.text ?: return false
-        wishDraft.description = Description(description)
+        wishDraft.description = try{
+            Description(description)
+        }
+        catch (e: UserReadableError){
+            userStates[user.id] = State.ASK_FOR_DESCRIPTION
+            throw e
+        }
         userStates[user.id] = State.ASK_FOR_LOCATION
         return true
     }

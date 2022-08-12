@@ -18,11 +18,17 @@ class MenuHandler(
     private val onSearchPressed: (User) -> Unit,
     private val onCancelFulfillmentPressed: (User) -> Unit,
     private val onMyWishesPressed: (User) -> Unit,
+    private val onRefreshPressed: (User) -> Unit,
 ) : Handler {
 
     private enum class CallBackMessages(val value: String) {
         MAKE_WISH("menu_make_wish"), DO_WISH("menu_do_good"), CANCEL_FULFILLMENT("cancel_fulfillment"), MY_WISHES("menu_my_wishes"), REFRESH("menu_refresh")
     }
+
+    private enum class State {
+        ASK_FOR_CHOICE, WAIT_FOR_CHOICE
+    }
+    private val userStates = mutableMapOf<Long, State>()
 
     override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it) } ?: false
 
@@ -34,26 +40,32 @@ class MenuHandler(
 
         val buttons = buildAnswerButtons(user, wishUserFulfilling != null, userStatistics.myWishesActive > 0)
 
-        update.callbackQuery?.let {
-            when (it.data) {
-                CallBackMessages.MAKE_WISH.value -> onMakeWishPressed(user)
-                CallBackMessages.DO_WISH.value -> onSearchPressed(user)
-                CallBackMessages.CANCEL_FULFILLMENT.value -> onCancelFulfillmentPressed(user)
-                CallBackMessages.MY_WISHES.value -> onMyWishesPressed(user)
-                CallBackMessages.REFRESH.value -> return
-                else -> null
+        when (userStates.getOrPut(user.id){ State.ASK_FOR_CHOICE }){
+            State.ASK_FOR_CHOICE -> {
+                sendGreetings(bot, user, chatId, userStatistics, getGlobalStatistics())
+                if (wishUserFulfilling != null) {
+                    bot.sendMessage(chatId, getLocalisedMessage("menu_wish_taken", user.languageCode))
+                    sendWishCard(bot, chatId, wishUserFulfilling, setOf(user.languageCode))
+                }
+                bot.sendMessage(
+                    chatId = chatId,
+                    text = getLocalisedMessage("menu_title", user.languageCode),
+                    replyMarkup = InlineKeyboardMarkup.create(buttons)
+                )
+                userStates[user.id] = State.WAIT_FOR_CHOICE
             }
-        } ?: run{
-            sendGreetings(bot, user, chatId, userStatistics, getGlobalStatistics())
-            if (wishUserFulfilling != null) {
-                bot.sendMessage(chatId, getLocalisedMessage("menu_wish_taken", user.languageCode))
-                sendWishCard(bot, chatId, wishUserFulfilling, setOf(user.languageCode))
+            State.WAIT_FOR_CHOICE -> {
+                update.callbackQuery?.let {
+                    userStates.remove(user.id)
+                    when (it.data) {
+                        CallBackMessages.MAKE_WISH.value -> onMakeWishPressed(user)
+                        CallBackMessages.DO_WISH.value -> onSearchPressed(user)
+                        CallBackMessages.CANCEL_FULFILLMENT.value -> onCancelFulfillmentPressed(user)
+                        CallBackMessages.MY_WISHES.value -> onMyWishesPressed(user)
+                        CallBackMessages.REFRESH.value -> onRefreshPressed(user)
+                    }
+                }
             }
-            bot.sendMessage(
-                chatId = chatId,
-                text = getLocalisedMessage("menu_title", user.languageCode),
-                replyMarkup = InlineKeyboardMarkup.create(buttons)
-            )
         }
     }
 

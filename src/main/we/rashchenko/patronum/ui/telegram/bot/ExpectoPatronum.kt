@@ -1,10 +1,7 @@
 package we.rashchenko.patronum.ui.telegram.bot
 
-import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
-import com.github.kotlintelegrambot.dispatcher.handlers.Handler
-import com.github.kotlintelegrambot.entities.Update
 import com.github.kotlintelegrambot.entities.User
 import com.github.kotlintelegrambot.logging.LogLevel
 import we.rashchenko.patronum.database.Database
@@ -12,26 +9,8 @@ import we.rashchenko.patronum.database.mongo.MongoDatabaseBuilder
 import we.rashchenko.patronum.errors.AlreadyFulfillingError
 import we.rashchenko.patronum.errors.NotFulfillingError
 import we.rashchenko.patronum.errors.UserNotExistError
-import we.rashchenko.patronum.errors.UserReadableError
 import we.rashchenko.patronum.ui.telegram.hotel.TelegramHotel
 import we.rashchenko.patronum.wishes.Wish
-
-class SafeHandlerWrapper(private val baseHandler: Handler, private val repeater: Repeater) : Handler {
-    override fun checkUpdate(update: Update) = baseHandler.checkUpdate(update)
-
-    override fun handleUpdate(bot: Bot, update: Update) {
-        val user = getTelegramUser(update) ?: return
-        val chatId = getChatId(update) ?: return
-        val languages = user.languageCode?.let { setOf(it) } ?: setOf()
-        try {
-            baseHandler.handleUpdate(bot, update)
-        } catch (error: UserReadableError) {
-            bot.sendErrorMultiLanguage(chatId, languages, error)
-            repeater.requestRepeat()
-        }
-    }
-
-}
 
 class ExpectoPatronum {
     private val database: Database = MongoDatabaseBuilder().build()
@@ -114,6 +93,8 @@ class ExpectoPatronum {
             repeater.requestRepeat()
         }, onMyWishesPressed = {
             chatStates[it.id] = MainState.MY_WISHES
+            repeater.requestRepeat()
+        }, onRefreshPressed = {
             repeater.requestRepeat()
         })
 
