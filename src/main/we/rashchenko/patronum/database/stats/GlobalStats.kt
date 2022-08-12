@@ -6,6 +6,6 @@ class GlobalStats {
     var sortedReputations: Array<Int> = arrayOf()
     fun getRateOnLeaderBoard(reputation: Int): Float{
         val place = sortedReputations.binarySearch(reputation)
-        return abs(place).toFloat() / sortedReputations.size
+        return (abs(place) + 1).toFloat() / sortedReputations.size
     }
 }
