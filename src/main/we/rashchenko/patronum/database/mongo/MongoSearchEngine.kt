@@ -31,7 +31,7 @@ class MongoSearchEngine(
         pipeline.add(Aggregates.sort(Sorts.descending("author.0.statsReputation")))
 
         return wishesCollection.aggregate(pipeline).filter { wish ->
-            val author = usersCollection.find(Filters.eq("_id", wish.authorId)).firstOrNull() ?: throw UserNotExistError()
+            val author = usersCollection.find(Filters.eq("_id", ObjectId(wish.authorId))).firstOrNull() ?: throw UserNotExistError()
             patron.id !in author.userIdStopList
         }
     }
