@@ -14,11 +14,11 @@ class SearchHandler(
     private val onCancel: (User) -> Unit,
 ) : Handler {
 
-    private enum class MakeARequestState {
+    private enum class State {
         ASK_FOR_LOCATION, WAIT_FOR_LOCATION, SKIP_LOCATION, ASK_FOR_RADIUS, WAIT_FOR_RADIUS
     }
 
-    private val userStates = mutableMapOf<Long, MakeARequestState>()
+    private val userStates = mutableMapOf<Long, State>()
     private val drafts = mutableMapOf<Long, SearchInfoDraft>()
     override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it) } ?: false
     override fun handleUpdate(bot: Bot, update: Update) {
@@ -36,12 +36,12 @@ class SearchHandler(
 
         val requestDraft = drafts.getOrPut(user.id) { SearchInfoDraft() }
         while (true) {
-            when (userStates.getOrPut(user.id) { MakeARequestState.ASK_FOR_LOCATION }) {
-                MakeARequestState.ASK_FOR_LOCATION, MakeARequestState.WAIT_FOR_LOCATION -> {
+            when (userStates.getOrPut(user.id) { State.ASK_FOR_LOCATION }) {
+                State.ASK_FOR_LOCATION, State.WAIT_FOR_LOCATION -> {
                     if (isLocationStageDone(bot, requestDraft, message, user, chatId, cancelButton)) continue else break
                 }
 
-                MakeARequestState.ASK_FOR_RADIUS, MakeARequestState.WAIT_FOR_RADIUS -> {
+                State.ASK_FOR_RADIUS, State.WAIT_FOR_RADIUS -> {
                     if (isRadiusStageDone(bot, requestDraft, message, user, chatId, cancelButton)) {
                         cleanup(bot, chatId, user, getLocalisedMessage("search_in_progress", user.languageCode))
                         onSearchRequestCreated(user, requestDraft)
@@ -49,7 +49,7 @@ class SearchHandler(
                     } else break
                 }
 
-                MakeARequestState.SKIP_LOCATION -> {
+                State.SKIP_LOCATION -> {
                     cleanup(bot, chatId, user, getLocalisedMessage("search_in_progress", user.languageCode))
                     onSearchRequestCreated(user, requestDraft)
                     return
@@ -93,6 +93,7 @@ class SearchHandler(
                 resizeKeyboard = true
             )
         )
+        userStates[user.id] = State.WAIT_FOR_LOCATION
     }
 
     private fun requestRadius(bot: Bot, user: User, chatId: ChatId.Id, cancelButton: KeyboardButton) {
@@ -101,6 +102,7 @@ class SearchHandler(
             text = getLocalisedMessage("make_wish_request_radius", user.languageCode),
             replyMarkup = KeyboardReplyMarkup(listOf(listOf(cancelButton)), resizeKeyboard = true)
         )
+        userStates[user.id] = State.WAIT_FOR_RADIUS
     }
 
     private fun isLocationStageDone(
@@ -116,14 +118,14 @@ class SearchHandler(
         val answer = askAndWaitForAnswer(
             message,
             sendRequestMessage = { requestLocation(bot, user, chatId, cancelButton, skipButton) },
-            checkValidText = { checkValidLocation(it) || checkSkipLocation(it, skipMessage) },
+            checkValidText = { (userStates[user.id] == State.WAIT_FOR_LOCATION) && (checkValidLocation(it) || checkSkipLocation(it, skipMessage)) },
         ) ?: return false
         if (checkSkipLocation(answer, skipMessage)) {
-            userStates[user.id] = MakeARequestState.SKIP_LOCATION
+            userStates[user.id] = State.SKIP_LOCATION
         }
         else {
             val location = answer.location!!
-            userStates[user.id] = MakeARequestState.ASK_FOR_RADIUS
+            userStates[user.id] = State.ASK_FOR_RADIUS
             requestDraft.location = we.rashchenko.patronum.search.geo.Location(location.longitude, location.latitude)
         }
         return true
@@ -140,7 +142,7 @@ class SearchHandler(
         val radius = askAndWaitForAnswer(
             message,
             sendRequestMessage = { requestRadius(bot, user, chatId, cancelButton) },
-            checkValidText = ::checkValidRadius
+            checkValidText = { (userStates[user.id] == State.WAIT_FOR_RADIUS) && checkValidRadius(it) }
         )?.text ?: return false
         requestDraft.radius = radius.toFloat()
         bot.sendMessage(chatId, getLocalisedMessage("search_start", user.languageCode))
