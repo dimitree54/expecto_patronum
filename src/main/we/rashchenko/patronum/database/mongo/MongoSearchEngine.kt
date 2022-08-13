@@ -18,17 +18,17 @@ class MongoSearchEngine(
     override fun search(patron: PatronUser, query: SearchInfo): Iterable<Wish> {
         val pipeline = mutableListOf<Bson>()
         query.searchArea?.let {
-            pipeline.add(Aggregates.match(Filters.geoIntersects("search_polygon", it.toMongo())))
+            pipeline.add(Aggregates.match(Filters.geoIntersects("searchPolygon", it.toMongo())))
         } ?: run {
-            pipeline.add(Aggregates.match(Filters.not(Filters.exists("search.polygon"))))
+            pipeline.add(Aggregates.match(Filters.not(Filters.exists("searchPolygon"))))
         }
         pipeline.add(Aggregates.match(Filters.not(Filters.exists("patronId"))))
-        pipeline.add(Aggregates.match(Filters.nin("_id", patron.wishIdStopList.map{ ObjectId(it) })))
         pipeline.add(Aggregates.match(Filters.eq("closed", false)))
+        pipeline.add(Aggregates.match(Filters.nin("_id", patron.wishIdStopList.map{ ObjectId(it) })))
+        pipeline.add(Aggregates.match(Filters.nin("authorId", patron.userIdStopList.map{ ObjectId(it) })))
+        pipeline.add(Aggregates.match(Filters.not(Filters.eq("authorId", ObjectId(patron.id)))))
         pipeline.add(Aggregates.lookup("users", "authorId", "_id", "author"))
-        pipeline.add(Aggregates.match(Filters.nin("author._id", patron.userIdStopList.map{ ObjectId(it) })))
-        pipeline.add(Aggregates.match(Filters.not(Filters.eq("author._id", ObjectId(patron.id)))))
-        pipeline.add(Aggregates.sort(Sorts.descending("author.reputation")))
+        pipeline.add(Aggregates.sort(Sorts.descending("author.0.statsReputation")))
 
         return wishesCollection.aggregate(pipeline).filter { wish ->
             val author = usersCollection.find(Filters.eq("_id", wish.authorId)).firstOrNull() ?: throw UserNotExistError()
