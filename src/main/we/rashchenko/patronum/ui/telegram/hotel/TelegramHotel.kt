@@ -56,7 +56,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
 
     private fun leaveRoom(chatId: Long) {
         client.send(TdApi.LeaveChat(chatId)) {
-            println("Status of leaving chat: ${it.get()}")
+            println("Chat left")
         }
     }
 
@@ -83,7 +83,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
                 )
             )
         ) {
-            println("Status of sending start message: ${it.get()}")
+            println("Start message sent")
             onSuccess()
         }
     }
