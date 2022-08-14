@@ -26,9 +26,8 @@ class MongoDatabaseBuilder {
     private val roomsDatabase: RoomsDatabase
     private val searchEngine: SearchEngine
 
-    private fun getMongoClient(protocol: String, user: String, password: String, host: String): MongoClient {
-        val connectionString = ConnectionString("$protocol://$user:$password@$host")
-        val settings: MongoClientSettings = MongoClientSettings.builder().applyConnectionString(connectionString)
+    private fun getMongoClient(connectionString: String): MongoClient {
+        val settings: MongoClientSettings = MongoClientSettings.builder().applyConnectionString(ConnectionString(connectionString))
             .serverApi(ServerApi.builder().version(ServerApiVersion.V1).build()).build()
         return MongoClients.create(settings)
     }
@@ -37,10 +36,7 @@ class MongoDatabaseBuilder {
         val database = Properties().let {
             it.load(ClassLoader.getSystemResourceAsStream("mongo.properties"))
             getMongoClient(
-                protocol = it["protocol"] as String,
-                user = System.getenv("MONGODB_USER"),
-                password = System.getenv("MONGODB_PASSWORD"),
-                host = it["host"] as String
+                System.getenv("MONGODB_CONNECTION")
             ).getDatabase(it["database"] as String)
         }
 
