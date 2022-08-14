@@ -102,7 +102,8 @@ class Database(
         val author = getUserById(wish.authorId)
         author.stats.myFulfillmentCancel()
         users.update(author)
-        wishes.cancel(wish)
+        wish.patronId = null
+        wishes.update(wish)
     }
 
     fun cancelFulfillmentByPatron(wish: Wish) {
