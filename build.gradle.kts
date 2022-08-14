@@ -4,7 +4,6 @@ plugins {
 }
 
 repositories {
-	jcenter()
 	mavenCentral()
 	maven("https://jitpack.io")
 	maven("https://mvn.mchv.eu/repository/mchv/")
@@ -45,17 +44,4 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 tasks.test {
 	useJUnitPlatform()
 	maxParallelForks = 8
-}
-
-publishing {
-	repositories {
-		maven {
-			name = "GitHubPackages"
-			url = uri("https://maven.pkg.github.com/dimitree54/expecto_patronum_library")
-			credentials {
-				username = System.getenv("GITHUB_ACTOR")
-				password = System.getenv("GITHUB_TOKEN")
-			}
-		}
-	}
 }
