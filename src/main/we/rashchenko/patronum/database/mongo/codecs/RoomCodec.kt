@@ -20,7 +20,7 @@ class RoomCodec : CollectibleCodec<WishRoom> {
         val doc = Document()
         doc["_id"] = ObjectId(room.id)
         doc["telegramId"] = room.telegramChatId
-        doc["wishId"] = room.wishId
+        doc["wishId"] = ObjectId(room.wishId)
         doc["languageCodes"] = room.getLanguageCodes().toList()
         doc["finished"] = room.finished
         doc["canceledByAuthor"] = room.canceledByAuthor
