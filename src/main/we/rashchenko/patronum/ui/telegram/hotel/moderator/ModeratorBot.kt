@@ -5,6 +5,7 @@ import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.Dispatcher
 import com.github.kotlintelegrambot.entities.ChatId
+import com.github.kotlintelegrambot.logging.LogLevel
 import we.rashchenko.patronum.database.Database
 import we.rashchenko.patronum.hotel.WishRoom
 import we.rashchenko.patronum.ui.telegram.bot.sendMessageMultiLanguage
@@ -22,6 +23,7 @@ class ModeratorBot(private val database: Database) {
     fun build() = bot {
         token = System.getenv("TELEGRAM_EP_OBSERVER_BOT_TOKEN")
         timeout = 30
+        logLevel = LogLevel.Error
         dispatch {
             safeRoomCommand(ModeratorCommand.START.command) { bot, _, chatId, room ->
                 val languages = room.getLanguageCodes()
