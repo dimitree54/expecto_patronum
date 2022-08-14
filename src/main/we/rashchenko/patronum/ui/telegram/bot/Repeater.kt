@@ -6,6 +6,8 @@ import com.github.kotlintelegrambot.entities.Update
 
 class Repeater : Handler {
     private var repeatRequested = false
+    private var depth = 0
+    private val maxDepth = 10
     fun requestRepeat() {
         repeatRequested = true
     }
@@ -20,9 +22,14 @@ class Repeater : Handler {
     }
 
     override fun handleUpdate(bot: Bot, update: Update) {
+        if (depth > maxDepth) {
+            throw IllegalStateException("Repeating in a loop")
+        }
         if (repeatRequested){
             repeatRequested = false
+            depth++
             handlers.filter { it.checkUpdate(update) }.forEach { it.handleUpdate(bot, update) }
+            depth--
         }
     }
 }
