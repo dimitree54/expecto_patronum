@@ -50,7 +50,8 @@ class BrowserHandler(
             onCancel(user)
             return
         }
-        if (state == State.WAIT_FOR_REACTION && message?.text == cancelMessage) {
+        else if (state == State.WAIT_FOR_REACTION && message?.text == cancelMessage) {
+            bot.clearKeyboard(chatId, getLocalisedMessage("browser_cancel", user.languageCode))
             states.remove(user.id)
             ticketsQueue.remove(user.id)
             onCancel(user)
@@ -67,16 +68,17 @@ class BrowserHandler(
             onSkip(user, tickets.first())
             tickets.removeFirst()
         }
-
-        sendWishCard(bot, chatId, tickets.first(), setOf(user.languageCode))
-        bot.sendMessage(chatId = chatId, text = getLocalisedMessage("browser_wish_accept_prompt", user.languageCode),
-            replyMarkup = KeyboardReplyMarkup(
-                keyboard = listOf(
-                    listOf(acceptButton, skipButton),
-                    listOf(cancelButton)
+        else{
+            sendWishCard(bot, chatId, tickets.first(), setOf(user.languageCode))
+            bot.sendMessage(chatId = chatId, text = getLocalisedMessage("browser_wish_accept_prompt", user.languageCode),
+                replyMarkup = KeyboardReplyMarkup(
+                    keyboard = listOf(
+                        listOf(acceptButton, skipButton),
+                        listOf(cancelButton)
+                    )
                 )
             )
-        )
-        states[user.id] = State.WAIT_FOR_REACTION
+            states[user.id] = State.WAIT_FOR_REACTION
+        }
     }
 }
