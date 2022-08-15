@@ -3,12 +3,14 @@ import org.apache.tools.ant.taskdefs.condition.Os.*
 plugins {
 	id("maven-publish")
 	kotlin("jvm") version "1.7.10"
+	application
 }
 
 repositories {
 	mavenCentral()
 	maven("https://jitpack.io")
 	maven("https://mvn.mchv.eu/repository/mchv/")
+	mavenLocal()
 }
 
 dependencies {
@@ -54,4 +56,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 tasks.test {
 	useJUnitPlatform()
 	maxParallelForks = 8
+}
+
+application{
+	mainClass.set("we.rashchenko.patronum.MainKt")
 }
