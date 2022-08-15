@@ -19,8 +19,6 @@ class MongoSearchEngine(
         val pipeline = mutableListOf<Bson>()
         query.searchArea?.let {
             pipeline.add(Aggregates.match(Filters.geoIntersects("searchPolygon", it.toMongo())))
-        } ?: run {
-            pipeline.add(Aggregates.match(Filters.not(Filters.exists("searchPolygon"))))
         }
         pipeline.add(Aggregates.match(Filters.not(Filters.exists("patronId"))))
         pipeline.add(Aggregates.match(Filters.eq("closed", false)))
