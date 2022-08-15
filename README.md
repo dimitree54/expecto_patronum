@@ -1,5 +1,7 @@
 # Expecto patronum project
 
+<img height="512" src="/Users/yid/source/expecto_patronum_library/readme_images/logo.png" title="Expecto Patronum Logo" width="512"/>
+
 "Expecto patronum" is an open source application of telegram bot. 
 The purpose of the application is to connect people with some tasks (wishes) with people who can do that task for free.
 That application is inspired by following services:
@@ -15,6 +17,8 @@ On the platform you can publish your wishes of any kind, from asking to walk wit
 Keep in mind though, that simple wishes are more likely to be fulfilled.
 
 Now telegram bot is available in two languages: Russian and English.
+
+Logo created with help of [DALL-E-2](https://openai.com/dall-e-2/)
 
 ## Using Expecto Patronum application
 
