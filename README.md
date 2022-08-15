@@ -1,6 +1,6 @@
 # Expecto patronum project
 
-<img height="512" src="/Users/yid/source/expecto_patronum_library/readme_images/logo.png" title="Expecto Patronum Logo" width="512"/>
+<img height="512" src="readme_images/logo.png" title="Expecto Patronum Logo" width="512"/>
 
 "Expecto patronum" is an open source application of telegram bot. 
 The purpose of the application is to connect people with some tasks (wishes) with people who can do that task for free.
