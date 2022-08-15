@@ -14,7 +14,7 @@ class SafeRoomCommandHandler(
     private val command: String,
     private val handleRoomCommand: (Bot, Long, ChatId.Id, WishRoom) -> Unit,
 ) : Handler {
-    override fun checkUpdate(update: Update) = update.message?.text == "/$command"
+    override fun checkUpdate(update: Update) = update.message?.text?.startsWith("/$command")?:false
 
     override fun handleUpdate(bot: Bot, update: Update) {
         val message = update.message ?: return
