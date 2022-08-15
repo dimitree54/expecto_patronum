@@ -7,6 +7,7 @@ import com.github.kotlintelegrambot.dispatcher.Dispatcher
 import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.logging.LogLevel
 import we.rashchenko.patronum.database.Database
+import we.rashchenko.patronum.errors.UserReadableError
 import we.rashchenko.patronum.hotel.WishRoom
 import we.rashchenko.patronum.ui.telegram.bot.sendMessageMultiLanguage
 import we.rashchenko.patronum.ui.telegram.bot.sendWishCard
@@ -44,6 +45,10 @@ class ModeratorBot(private val database: Database) {
                 bot.sendMessageMultiLanguage(chatId, room.getLanguageCodes(), "hotel_wish_cancel")
             }
             safeRoomCommand(ModeratorCommand.REPORT.command){ bot, senderId, chatId, room ->
+                try{
+                    database.cancelRoomWish(senderId, room)
+                }
+                catch(_: UserReadableError){}
                 database.registerRoomReport(senderId, room)
                 bot.sendMessageMultiLanguage(chatId, room.getLanguageCodes(), "hotel_report")
             }
