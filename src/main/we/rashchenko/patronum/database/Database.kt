@@ -24,13 +24,11 @@ class Database(
     }
 
     private val expirationPeriod: Period
-    private val closeWishPeriod: Period
 
     init {
         Properties().let {
             it.load(ClassLoader.getSystemResourceAsStream("limits.properties"))
             expirationPeriod = Period.ofDays(it.getProperty("wishExpirationDays").toInt())
-            closeWishPeriod = Period.ofDays(it.getProperty("wishRemoveDelayDays").toInt())
         }
     }
 
@@ -152,9 +150,9 @@ class Database(
     fun finishRoomWish(requestFromTelegramId: Long, wishRoom: WishRoom) {
         val wish = getWishById(wishRoom.wishId)
         val requestFromId = getUserByTelegramId(requestFromTelegramId).id
-        if (requestFromId != wish.authorId) throw InvalidWishRightsError()
         if (wish.closed) throw WishClosedError()
         if (wish.patronId != wishRoom.patronId) throw RoomClosedError()
+        if (requestFromId != wish.authorId) throw InvalidWishRightsError()
         finishWish(wish)
         updateRoom(wishRoom)
     }
