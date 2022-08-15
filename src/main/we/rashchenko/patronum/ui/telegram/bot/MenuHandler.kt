@@ -2,7 +2,10 @@ package we.rashchenko.patronum.ui.telegram.bot
 
 import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.dispatcher.handlers.Handler
-import com.github.kotlintelegrambot.entities.*
+import com.github.kotlintelegrambot.entities.ChatId
+import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
+import com.github.kotlintelegrambot.entities.Update
+import com.github.kotlintelegrambot.entities.User
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import we.rashchenko.patronum.database.stats.GlobalStats
 import we.rashchenko.patronum.database.stats.UserStats
@@ -22,12 +25,15 @@ class MenuHandler(
 ) : Handler {
 
     private enum class CallBackMessages(val value: String) {
-        MAKE_WISH("menu_make_wish"), DO_WISH("menu_do_good"), CANCEL_FULFILLMENT("cancel_fulfillment"), MY_WISHES("menu_my_wishes"), REFRESH("menu_refresh")
+        MAKE_WISH("menu_make_wish"), DO_WISH("menu_do_good"), CANCEL_FULFILLMENT("cancel_fulfillment"), MY_WISHES("menu_my_wishes"), REFRESH(
+            "menu_refresh"
+        )
     }
 
     private enum class State {
         ASK_FOR_CHOICE, WAIT_FOR_CHOICE
     }
+
     private val userStates = mutableMapOf<Long, State>()
 
     override fun checkUpdate(update: Update) = getTelegramUser(update)?.let { externalCheckUpdate(it) } ?: false
@@ -40,7 +46,7 @@ class MenuHandler(
 
         val buttons = buildAnswerButtons(user, wishUserFulfilling != null, userStatistics.myWishesActive > 0)
 
-        when (userStates.getOrPut(user.id){ State.ASK_FOR_CHOICE }){
+        when (userStates.getOrPut(user.id) { State.ASK_FOR_CHOICE }) {
             State.ASK_FOR_CHOICE -> {
                 sendGreetings(bot, user, chatId, userStatistics, getGlobalStatistics())
                 if (wishUserFulfilling != null) {
@@ -54,6 +60,7 @@ class MenuHandler(
                 )
                 userStates[user.id] = State.WAIT_FOR_CHOICE
             }
+
             State.WAIT_FOR_CHOICE -> {
                 update.callbackQuery?.let {
                     userStates.remove(user.id)
@@ -74,37 +81,51 @@ class MenuHandler(
     }
 
     private fun buildAnswerButtons(
-        user: User, isUserFulfilling: Boolean, isUserHaveWishes: Boolean
-    ): MutableList<InlineKeyboardButton.CallbackData> {
+        user: User, isUserFulfilling: Boolean, isUserHaveWishes: Boolean,
+    ): List<List<InlineKeyboardButton.CallbackData>> {
         val buttons = mutableListOf(
-            InlineKeyboardButton.CallbackData(
-                text = getLocalisedMessage("menu_make_wish", user.languageCode), callbackData = CallBackMessages.MAKE_WISH.value
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    text = getLocalisedMessage("menu_make_wish", user.languageCode),
+                    callbackData = CallBackMessages.MAKE_WISH.value
+                )
             )
         )
         if (isUserFulfilling) {
             buttons.add(
-                InlineKeyboardButton.CallbackData(
-                    text = getLocalisedMessage("menu_cancel_fulfillment", user.languageCode),
-                    callbackData = CallBackMessages.CANCEL_FULFILLMENT.value
-                ),
+                listOf(
+                    InlineKeyboardButton.CallbackData(
+                        text = getLocalisedMessage("menu_cancel_fulfillment", user.languageCode),
+                        callbackData = CallBackMessages.CANCEL_FULFILLMENT.value
+                    )
+                )
             )
         } else {
             buttons.add(
-                InlineKeyboardButton.CallbackData(
-                    text = getLocalisedMessage("menu_do_good", user.languageCode), callbackData = CallBackMessages.DO_WISH.value
+                listOf(
+                    InlineKeyboardButton.CallbackData(
+                        text = getLocalisedMessage("menu_do_good", user.languageCode),
+                        callbackData = CallBackMessages.DO_WISH.value
+                    )
                 )
             )
         }
         if (isUserHaveWishes) {
             buttons.add(
-                InlineKeyboardButton.CallbackData(
-                    text = getLocalisedMessage("menu_my_wishes", user.languageCode), callbackData = CallBackMessages.MY_WISHES.value
+                listOf(
+                    InlineKeyboardButton.CallbackData(
+                        text = getLocalisedMessage("menu_my_wishes", user.languageCode),
+                        callbackData = CallBackMessages.MY_WISHES.value
+                    )
                 )
             )
         }
         buttons.add(
-            InlineKeyboardButton.CallbackData(
-                text = getLocalisedMessage("menu_refresh", user.languageCode), callbackData = CallBackMessages.REFRESH.value
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    text = getLocalisedMessage("menu_refresh", user.languageCode),
+                    callbackData = CallBackMessages.REFRESH.value
+                )
             )
         )
         return buttons
