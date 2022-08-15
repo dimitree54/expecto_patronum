@@ -21,13 +21,11 @@ class RoomCodec : CollectibleCodec<WishRoom> {
         doc["_id"] = ObjectId(room.id)
         doc["telegramId"] = room.telegramChatId
         doc["wishId"] = ObjectId(room.wishId)
+        doc["authorId"] = ObjectId(room.authorId)
+        doc["patronId"] = ObjectId(room.patronId)
         doc["languageCodes"] = room.getLanguageCodes().toList()
-        doc["finished"] = room.finished
-        doc["canceledByAuthor"] = room.canceledByAuthor
-        doc["canceledByPatron"] = room.canceledByPatron
         doc["reportedByAuthor"] = room.reportedByAuthor
         doc["reportedByPatron"] = room.reportedByPatron
-        doc["closed"] = room.closed
 
         documentCodec.encode(bsonWriter, doc, encoderContext)
     }
@@ -38,13 +36,12 @@ class RoomCodec : CollectibleCodec<WishRoom> {
             id = (doc.getObjectId("_id")).toHexString(),
             telegramChatId = doc.getLong("telegramId"),
             wishId = doc.getObjectId("wishId").toHexString(),
+            authorId = doc.getObjectId("authorId").toHexString(),
+            patronId = doc.getObjectId("patronId").toHexString()
         ).apply {
             doc.getList("languageCodes", String::class.java).forEach {
                 addLanguageCode(it)
             }
-            finished = doc.getBoolean("finished")
-            canceledByAuthor = doc.getBoolean("canceledByAuthor")
-            canceledByPatron = doc.getBoolean("canceledByPatron")
             reportedByAuthor = doc.getBoolean("reportedByAuthor")
             reportedByPatron = doc.getBoolean("reportedByPatron")
         }

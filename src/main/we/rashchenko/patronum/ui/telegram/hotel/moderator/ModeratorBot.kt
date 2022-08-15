@@ -42,7 +42,6 @@ class ModeratorBot(private val database: Database) {
             safeRoomCommand(ModeratorCommand.CANCEL.command){ bot, senderId, chatId, room ->
                 database.cancelRoomWish(senderId, room)
                 bot.sendMessageMultiLanguage(chatId, room.getLanguageCodes(), "hotel_wish_cancel")
-
             }
             safeRoomCommand(ModeratorCommand.REPORT.command){ bot, senderId, chatId, room ->
                 database.registerRoomReport(senderId, room)

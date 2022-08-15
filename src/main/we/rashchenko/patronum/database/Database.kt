@@ -57,9 +57,8 @@ class Database(
     }
 
     fun registerRoomReport(requestFromTelegramId: Long, room: WishRoom) {
-        val wish = getWishById(room.wishId)
-        val author = getUserById(wish.authorId)
-        val patron = getUserById(wish.patronId ?: throw PatronNotExistError())
+        val author = getUserById(room.authorId)
+        val patron = getUserById(room.patronId)
         when (requestFromTelegramId) {
             author.telegramId -> {
                 if (room.reportedByAuthor) throw ReportAgainError()
@@ -144,7 +143,7 @@ class Database(
         val author = getUserById(wish.authorId)
         val patron = getUserById(wish.patronId ?: throw PatronNotExistError())
         rooms.new(
-            WishRoom(generateNewRoomId(), roomTelegramId, wish.id).apply {
+            WishRoom(generateNewRoomId(), roomTelegramId, wish.id, author.id, patron.id).apply {
                 author.languageCode?.let { addLanguageCode(it) }
                 patron.languageCode?.let { addLanguageCode(it) }
             })
@@ -154,9 +153,8 @@ class Database(
         val wish = getWishById(wishRoom.wishId)
         val requestFromId = getUserByTelegramId(requestFromTelegramId).id
         if (requestFromId != wish.authorId) throw InvalidWishRightsError()
-        if (wishRoom.closed) throw RoomClosedError()
         if (wish.closed) throw WishClosedError()
-        wishRoom.finished = true
+        if (wish.patronId != wishRoom.patronId) throw RoomClosedError()
         finishWish(wish)
         updateRoom(wishRoom)
     }
@@ -164,19 +162,15 @@ class Database(
     fun cancelRoomWish(requestFromTelegramId: Long, wishRoom: WishRoom) {
         val wish = getWishById(wishRoom.wishId)
         val requestFromId = getUserByTelegramId(requestFromTelegramId).id
-        if (wishRoom.closed) throw RoomClosedError()
         if (wish.closed) throw WishClosedError()
+        if (wish.patronId != wishRoom.patronId) throw RoomClosedError()
         when (requestFromId) {
             wish.authorId -> {
-                wishRoom.canceledByAuthor = true
                 cancelFulfillmentByAuthor(wish)
             }
-
             wish.patronId -> {
-                wishRoom.canceledByPatron = true
                 cancelFulfillmentByPatron(wish)
             }
-
             else -> throw InvalidWishRightsError()
         }
         updateRoom(wishRoom)
