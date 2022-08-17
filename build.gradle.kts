@@ -35,7 +35,7 @@ else{
 	dependencies {
 		implementation(platform("it.tdlight:tdlight-java-bom:2.8.4.1"))
 		implementation("it.tdlight:tdlight-java:2.8.4.1")
-		implementation("it.tdlight:tdlight-natives-linux-amd64:4.0.267")
+		implementation("it.tdlight:tdlight-natives-linux-amd64:4.0.265")
 	}
 }
 
