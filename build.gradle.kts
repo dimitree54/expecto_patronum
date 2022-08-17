@@ -61,3 +61,7 @@ tasks.test {
 application{
 	mainClass.set("we.rashchenko.patronum.MainKt")
 }
+
+tasks.named<JavaExec>("run") {
+	standardInput = System.`in`
+}
