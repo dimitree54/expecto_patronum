@@ -12,9 +12,7 @@ fun main() {
         println("Moderator bot is running. Id: ${bot.getMe().get().id}")
         bot.startPolling()
     }
-    thread {
-        val bot = ExpectoPatronum().build()
-        println("Main bot is running")
-        bot.startPolling()
-    }
+    val bot = ExpectoPatronum().build()
+    println("Main bot is running")
+    bot.startPolling()
 }
