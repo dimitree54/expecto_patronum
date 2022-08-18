@@ -95,7 +95,7 @@ Here is contribution options you can use:
 4. Attention contribution:
    1. You can share information about Expecto Patronum in your social media to let more people know about it.
 5. Financial contribution:
-   1. For now, it is not supported. But if you interested in donating some money to encourage me to spend more time on Expecto Patronum project, you can write me to Telegram. If I receive several requests for that, I will set up convenient method for that.
+   1. https://github.com/sponsors/dimitree54
 
 ## Contacts
 
