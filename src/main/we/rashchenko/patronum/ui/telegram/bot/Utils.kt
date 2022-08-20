@@ -87,7 +87,8 @@ fun sendUserStatistics(bot: Bot, user: User, chatId: ChatId.Id, stats: UserStats
             stats.othersWishesDone,
             stats.reputation,
             (globalStats.getRateOnLeaderBoard(stats.reputation) * 100).roundToInt()
-        )
+        ),
+        replyMarkup = ReplyKeyboardRemove()
     )
 }
 
