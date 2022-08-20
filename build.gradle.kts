@@ -1,16 +1,14 @@
 import org.apache.tools.ant.taskdefs.condition.Os.*
 
 plugins {
-	id("maven-publish")
 	kotlin("jvm") version "1.7.10"
-	application
 }
 
 repositories {
 	mavenCentral()
+	mavenLocal()
 	maven("https://jitpack.io")
 	maven("https://mvn.mchv.eu/repository/mchv/")
-	mavenLocal()
 }
 
 dependencies {
@@ -19,7 +17,7 @@ dependencies {
 	testImplementation(kotlin("test-junit5"))
 	implementation("org.mongodb:mongodb-driver-sync:4.6.0")
 	implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.7")
-    implementation(kotlin("script-runtime"))
+	implementation(kotlin("script-runtime"))
 	implementation("org.slf4j:slf4j-api:1.7.36")
 	implementation("org.slf4j:slf4j-simple:1.7.36")
 }
@@ -49,19 +47,16 @@ sourceSets.test {
 	java.srcDirs("src/test")
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-	kotlinOptions.jvmTarget = "1.8"
-}
-
-tasks.test {
-	useJUnitPlatform()
-	maxParallelForks = 8
-}
-
-application{
-	mainClass.set("we.rashchenko.patronum.MainKt")
-}
-
-tasks.named<JavaExec>("run") {
-	standardInput = System.`in`
+tasks{
+	jar {
+		manifest {
+			attributes["Main-Class"] = "we.rashchenko.patronum.MainKt"
+		}
+		from(
+			Callable {
+				configurations.getByName("runtimeClasspath").map { if (it.isDirectory) it else zipTree(it) }
+			}
+		)
+		duplicatesStrategy = DuplicatesStrategy.INCLUDE
+	}
 }
