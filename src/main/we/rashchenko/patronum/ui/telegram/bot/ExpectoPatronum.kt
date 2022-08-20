@@ -125,8 +125,8 @@ class ExpectoPatronum {
     private fun acceptWish(patronTelegram: User, wish: Wish) {
         val author = database.getUserById(wish.authorId)
         val patron = database.getUserByTelegramId(patronTelegram.id)
-        database.acceptWish(patron, wish)
         hotel.openRoom(wish.title.text, listOf(author.telegramId, patronTelegram.id)) { roomTelegramId ->
+            database.acceptWish(patron, wish)
             database.openWishRoom(roomTelegramId, wish)
         }
     }

@@ -4,6 +4,7 @@ import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.Dispatcher
+import com.github.kotlintelegrambot.dispatcher.command
 import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.logging.LogLevel
 import we.rashchenko.patronum.database.Database
@@ -26,6 +27,9 @@ class ModeratorBot(private val database: Database) {
         timeout = 30
         logLevel = LogLevel.Error
         dispatch {
+            command("check"){
+                bot.sendMessage(ChatId.fromId(this.message.chat.id), "I am running")
+            }
             safeRoomCommand(ModeratorCommand.START.command) { bot, _, chatId, room ->
                 val languages = room.getLanguageCodes()
                 if (languages.size > 1) {

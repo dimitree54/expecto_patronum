@@ -23,7 +23,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
     }
 
     private enum class HotelState{
-        OPEN, OPENING, CLOSED, ERROR
+        OPEN, OPENING, CLOSED, ERROR, WAIT_AUTH
     }
 
     private fun start() {
@@ -34,7 +34,12 @@ class TelegramHotel(private val moderatorUserId: Long) {
                 is TdApi.AuthorizationStateReady -> HotelState.OPEN
                 is TdApi.AuthorizationStateWaitTdlibParameters,
                 is TdApi.AuthorizationStateWaitEncryptionKey -> HotelState.OPENING
-                else -> HotelState.ERROR
+                is TdApi.AuthorizationStateWaitPhoneNumber -> HotelState.WAIT_AUTH
+                is TdApi.AuthorizationStateWaitCode -> HotelState.WAIT_AUTH
+                else -> {
+                    println("Unknown authorization state: ${it.authorizationState}")
+                    HotelState.ERROR
+                }
             }
         }
 
@@ -42,13 +47,21 @@ class TelegramHotel(private val moderatorUserId: Long) {
         val authenticationData = AuthenticationData.consoleLogin()
         client.start(authenticationData)
 
-        repeat(retries) {
-            if (state == HotelState.OPEN) {
-                println("Hotel opened")
-                return
-            }
-            if (state == HotelState.ERROR) {
-                throw IllegalStateException("Hotel opening failed")
+        var i = 0
+        while (state != HotelState.OPEN && i < retries) {
+            when (state) {
+                HotelState.OPEN -> {
+                    println("Hotel opened")
+                    return
+                }
+                HotelState.ERROR -> {
+                    throw IllegalStateException("Hotel opening failed")
+                }
+                HotelState.WAIT_AUTH -> {
+                }
+                else -> {
+                    i++
+                }
             }
             Thread.sleep(1000)
         }

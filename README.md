@@ -74,6 +74,7 @@ To start using Expecto Patronum application you should send `/start` command to 
    Build steps described [here](https://github.com/dimitree54/tdlight-java). 
    For other platforms you can use TDLight-Java directly.
    To do that modify build.gradle.kts file by setting correct tdlight version.
+   5. To invite bots to rooms, hotel owner have to initiate private conversation with bot at first. So send `/check` command to moderator bot at first.
 
 ## Contribution
 
