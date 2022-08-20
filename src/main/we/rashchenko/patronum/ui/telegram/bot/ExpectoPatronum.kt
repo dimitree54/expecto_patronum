@@ -27,14 +27,16 @@ class ExpectoPatronum {
     }
 
     private fun isRegistrationRequired(telegramUser: User): Boolean {
-        return try {
-            database.getUserByTelegramId(telegramUser.id)
-            if (chatStates[telegramUser.id] == null) {
-                chatStates[telegramUser.id] = MainState.MENU
-            }
+        return if (telegramUser.id in chatStates){
             false
-        } catch (e: UserNotExistError) {
-            true
+        } else{
+            try {
+                database.getUserByTelegramId(telegramUser.id)
+                chatStates[telegramUser.id] = MainState.MENU
+                false
+            } catch (e: UserNotExistError) {
+                true
+            }
         }
     }
 
