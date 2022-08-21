@@ -128,6 +128,11 @@ class Database(
         wishes.update(wish)
     }
 
+    fun checkWishAvailable(wishId: String): Boolean {
+        val wish = getWishById(wishId)
+        return wish.patronId == null
+    }
+
     fun skipWish(patron: PatronUser, wish: Wish) {
         patron.wishIdStopList.add(wish.id)
         users.update(patron)

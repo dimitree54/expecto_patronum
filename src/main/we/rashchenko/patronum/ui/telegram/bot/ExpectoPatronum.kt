@@ -9,6 +9,7 @@ import we.rashchenko.patronum.database.mongo.MongoDatabaseBuilder
 import we.rashchenko.patronum.errors.AlreadyFulfillingError
 import we.rashchenko.patronum.errors.NotFulfillingError
 import we.rashchenko.patronum.errors.UserNotExistError
+import we.rashchenko.patronum.errors.WishNotAvailableError
 import we.rashchenko.patronum.ui.telegram.hotel.TelegramHotel
 import we.rashchenko.patronum.wishes.Wish
 
@@ -127,6 +128,7 @@ class ExpectoPatronum {
     private fun acceptWish(patronTelegram: User, wish: Wish) {
         val author = database.getUserById(wish.authorId)
         val patron = database.getUserByTelegramId(patronTelegram.id)
+        if (!database.checkWishAvailable(wish.id)) throw WishNotAvailableError()
         hotel.openRoom(wish.title.text, listOf(author.telegramId, patronTelegram.id)) { roomTelegramId ->
             database.acceptWish(patron, wish)
             database.openWishRoom(roomTelegramId, wish)
@@ -135,8 +137,8 @@ class ExpectoPatronum {
 
     private fun buildBrowserHandler(repeater: Repeater) =
         BrowserHandler(externalCheckUpdate = ::isBrowserRequired, onMatch = { telegramUser, wish ->
-            acceptWish(telegramUser, wish)
             chatStates[telegramUser.id] = MainState.MENU
+            acceptWish(telegramUser, wish)
             repeater.requestRepeat()
         }, onSkip = { telegramUser, wish ->
             val patron = database.getUserByTelegramId(telegramUser.id)
