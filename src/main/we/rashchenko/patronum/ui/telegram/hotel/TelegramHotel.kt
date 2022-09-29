@@ -101,9 +101,34 @@ class TelegramHotel(private val moderatorUserId: Long) {
         }
     }
 
+    private fun checkAllUsersExist(userIds: List<Long>): Boolean{
+        println("Retrieving users info...")
+        userIds.forEach { userId ->
+            var userExist = false
+            client.send(TdApi.GetUser(userId)) {
+                userExist = true
+            }
+            var i = 0
+            while (!userExist && i < retries) {
+                Thread.sleep(1000)
+                i++
+            }
+            if (!userExist) {
+                return false
+            }
+        }
+        println("All users exist and reachable")
+        return true
+    }
+
     fun openRoom(title: String, userIds: List<Long>, onRoomOpened: (Long) -> Unit): Long {
         println("Received open room command. opening room...")
         var chatId: Long? = null
+
+        if (!checkAllUsersExist(userIds)){
+            throw RoomOpenError("Some users are not found")
+        }
+
         client.send(
             TdApi.CreateNewBasicGroupChat(
                 (userIds + moderatorUserId).toLongArray(), title
