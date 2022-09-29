@@ -15,7 +15,7 @@ dependencies {
 	implementation(kotlin("stdlib"))
 	implementation("org.junit.jupiter:junit-jupiter:5.8.2")
 	testImplementation(kotlin("test-junit5"))
-	implementation("org.mongodb:mongodb-driver-sync:4.6.0")
+	implementation("org.mongodb:mongodb-driver-sync:4.7.1")
 	implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.7")
 	implementation(kotlin("script-runtime"))
 	implementation("org.slf4j:slf4j-api:1.7.36")
