@@ -7,6 +7,7 @@ import it.tdlight.client.TDLibSettings
 import it.tdlight.common.Init
 import it.tdlight.jni.TdApi
 import we.rashchenko.patronum.errors.RoomOpenError
+import we.rashchenko.patronum.ui.messages.getLocalisedMessage
 
 class TelegramHotel(private val moderatorUserId: Long) {
     private val client: SimpleTelegramClient
@@ -73,7 +74,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
         }
     }
 
-    private fun sendStartMessage(chatId: Long, onSuccess: () -> Unit) {
+    private fun sendMessage(chatId: Long, messageText: String, onSuccess: () -> Unit) {
         client.send(
             TdApi.SendMessage(
                 chatId,
@@ -88,7 +89,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
                 null,
                 TdApi.InputMessageText(
                     TdApi.FormattedText(
-                        "/start",
+                        messageText,
                         emptyArray()
                     ),
                     true,
@@ -101,22 +102,53 @@ class TelegramHotel(private val moderatorUserId: Long) {
         }
     }
 
-    private fun checkAllUsersExist(userIds: List<Long>): Boolean{
-        println("Retrieving users info...")
-        userIds.forEach { userId ->
-            var userExist = false
-            client.send(TdApi.GetUser(userId)) {
-                userExist = true
-            }
-            var i = 0
-            while (!userExist && i < retries) {
-                Thread.sleep(1000)
-                i++
-            }
-            if (!userExist) {
-                return false
+    fun checkInUser(userId: Long): Boolean{
+        println("Registering user $userId in hotel")
+        var userRegistered = false
+        val languageCode = getUser(userId)?.languageCode ?: return false
+        val checkInMessage = getLocalisedMessage("hotel_check_in", languageCode)
+        client.send(TdApi.CreatePrivateChat(userId, false)) {
+            println("Private chat created")
+            val chatId = it.get().id
+            sendMessage(chatId,
+                checkInMessage) {
+                userRegistered = true
             }
         }
+        var i = 0
+        while (!userRegistered && i < retries) {
+            Thread.sleep(1000)
+            i++
+        }
+        return userRegistered
+    }
+
+    private fun getUser(userId: Long): TdApi.User? {
+        var user: TdApi.User? = null
+        client.send(TdApi.GetUser(userId)) {
+            println("User $userId exist")
+            user = it.get()
+        }
+        var i = 0
+        while (user == null && i < retries) {
+            Thread.sleep(1000)
+            i++
+        }
+        return user
+    }
+
+    fun checkUserAvailable(userId: Long): Boolean {
+        println("Checking user $userId")
+        getUser(userId)?.let {
+            print("User $userId is available")
+            return true
+        }
+        return false
+    }
+
+    private fun checkAllUsersAvailable(userIds: List<Long>): Boolean{
+        println("Retrieving users info...")
+        userIds.all{checkUserAvailable(it)}
         println("All users exist and reachable")
         return true
     }
@@ -125,7 +157,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
         println("Received open room command. opening room...")
         var chatId: Long? = null
 
-        if (!checkAllUsersExist(userIds)){
+        if (!checkAllUsersAvailable(userIds)){
             throw RoomOpenError("Some users are not found")
         }
 
@@ -137,7 +169,7 @@ class TelegramHotel(private val moderatorUserId: Long) {
             val chat = resultChat.get()
             chatId = chat.id
             onRoomOpened(chatId!!)
-            sendStartMessage(chat.id) {
+            sendMessage(chat.id, "/start") {
                 leaveRoom(chat.id)
             }
             println("Created chat ${chat.id}")

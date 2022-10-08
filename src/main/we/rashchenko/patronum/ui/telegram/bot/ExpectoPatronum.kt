@@ -28,9 +28,9 @@ class ExpectoPatronum {
     }
 
     private fun isRegistrationRequired(telegramUser: User): Boolean {
-        return if (telegramUser.id in chatStates){
+        return if (telegramUser.id in chatStates) {
             false
-        } else{
+        } else {
             try {
                 database.getUserByTelegramId(telegramUser.id)
                 chatStates[telegramUser.id] = MainState.MENU
@@ -66,7 +66,9 @@ class ExpectoPatronum {
     }
 
     private fun buildRegistrationHandler(repeater: Repeater) =
-        RegistrationHandler(externalCheckUpdate = ::isRegistrationRequired, onSuccessfulRegistration = { telegramUser ->
+        RegistrationHandler(externalCheckUpdate = ::isRegistrationRequired, checkRegisteredInHotel = {
+            hotel.checkInUser(it.id)
+        }, onSuccessfulRegistration = { telegramUser ->
             database.newUser(telegramUser.id, telegramUser.languageCode)
             chatStates[telegramUser.id] = MainState.MENU
             repeater.requestRepeat()
