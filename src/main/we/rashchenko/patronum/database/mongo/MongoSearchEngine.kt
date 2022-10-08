@@ -17,8 +17,13 @@ class MongoSearchEngine(
 ) : SearchEngine {
     override fun search(patron: PatronUser, query: SearchInfo): Iterable<Wish> {
         val pipeline = mutableListOf<Bson>()
-        query.searchArea?.let {
-            pipeline.add(Aggregates.match(Filters.geoIntersects("searchPolygon", it.toMongo())))
+        val globalFilter = Filters.not(Filters.exists("searchPolygon"))
+        if (query.searchArea != null){
+            val intersectPolygonFilter = Filters.geoIntersects("searchPolygon", query.searchArea.toMongo())
+            pipeline.add(Aggregates.match(Filters.or(globalFilter, intersectPolygonFilter)))
+        }
+        else{
+            pipeline.add(Aggregates.match(globalFilter))
         }
         pipeline.add(Aggregates.match(Filters.not(Filters.exists("patronId"))))
         pipeline.add(Aggregates.match(Filters.eq("closed", false)))
