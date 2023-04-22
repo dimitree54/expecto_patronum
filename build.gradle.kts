@@ -22,19 +22,11 @@ dependencies {
 	implementation("org.slf4j:slf4j-simple:1.7.36")
 }
 
-if (isFamily(FAMILY_MAC) && isArch("aarch64")){
-	dependencies {
-		implementation(platform("it.tdlight:tdlight-java-bom:1.0.0.0-SNAPSHOT"))
-		implementation("it.tdlight:tdlight-java:1.0.0.0-SNAPSHOT")
-		implementation("it.tdlight:tdlight-natives-osx-aarch64:4.0.0-SNAPSHOT")
-	}
-}
-else{
-	dependencies {
-		implementation(platform("it.tdlight:tdlight-java-bom:2.8.4.1"))
-		implementation("it.tdlight:tdlight-java:2.8.4.1")
-		implementation("it.tdlight:tdlight-natives-linux-amd64:4.0.265")
-	}
+dependencies {
+	implementation("it.tdlight:tdlight-api-sealed:4.0.265")
+	implementation(platform("it.tdlight:tdlight-java-bom:1.0.0.0-SNAPSHOT"))
+	implementation("it.tdlight:tdlight-java:1.0.0.0-SNAPSHOT")
+	implementation("it.tdlight:tdlight-natives-osx-aarch64:4.0.0-SNAPSHOT")
 }
 
 // we need to specify following sourceSets because we store main and test not in default
