@@ -22,6 +22,8 @@ Logo created with help of [DALL-E-2](https://openai.com/dall-e-2/)
 
 ## Using Expecto Patronum application
 
+__IMPORTANT__, expecto patronum bot shut down due to low demand.
+
 To start using Expecto Patronum application you should send `/start` command to [Expecto Patronum bot](https://t.me/ExpectoPatronumByYID_bot).
 
 ### Guide
